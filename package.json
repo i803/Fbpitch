@@ -1,0 +1,26 @@
+{
+  "name": "football-kit-store",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@paypal/react-paypal-js": "^7.8.3",
+    "cloudinary": "^2.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.281.0",
+    "mongodb": "^6.17.0",
+    "mongoose": "^8.16.1",
+    "next": "^14.1.0",
+    "nodemailer": "^7.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.3.2"
+  }
+}

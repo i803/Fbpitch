@@ -1,8 +1,18 @@
-# .gitignore
+# Dependencies
 node_modules
+
+# Next.js build output
 .next
-.env
-.DS_Store
 dist
-npm-debug.log
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode

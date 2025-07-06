@@ -11,10 +11,25 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  const checkLogin = () => {
+    const token = localStorage.getItem("userToken");
+    setIsUserLoggedIn(!!token);
+  };
+
   useEffect(() => {
-    const userToken = localStorage.getItem("userToken");
-    setIsUserLoggedIn(!!userToken);
+    checkLogin(); // Check on first mount
+
+    const handleFocus = () => checkLogin(); // Check when window gains focus
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
+
+  useEffect(() => {
+    checkLogin(); // Check on route change
+  }, [pathname]);
 
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
@@ -38,7 +53,7 @@ export default function Sidebar() {
     localStorage.removeItem("loggedInUser");
     setIsUserLoggedIn(false);
     setOpen(false);
-    router.refresh();  // Refresh page to update state
+    router.refresh();
   };
 
   return (
@@ -62,7 +77,7 @@ export default function Sidebar() {
         <h2 className="text-3xl font-bold mb-8 text-black select-none tracking-wide">Fbpitch</h2>
 
         <nav className="flex flex-col gap-4 text-lg flex-grow">
-          {[
+          {[ 
             { href: "/", label: "Home" },
             { href: "/return-policy", label: "Return Policy" },
             { href: "/terms", label: "Terms & Conditions" },

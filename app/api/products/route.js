@@ -12,7 +12,7 @@ export async function GET() {
       name: p.name,
       price: p.price,
       image: p.image,
-      category: p.category || "NEW ARRIVALS", 
+      category: p.category || "NEW ARRIVALS",
     }));
 
     return NextResponse.json({ products: formatted });
@@ -49,7 +49,6 @@ export async function PUT(request) {
     }
 
     await Product.findByIdAndUpdate(id, { name, price, category });
-
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[PUT] Error updating product:", err);

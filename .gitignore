@@ -1,1 +1,8 @@
+# .gitignore
 node_modules
+.next
+.env
+.DS_Store
+dist
+.vscode
+npm-debug.log

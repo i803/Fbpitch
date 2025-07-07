@@ -74,7 +74,7 @@ export default function Sidebar() {
         role="navigation"
         aria-label="Sidebar navigation"
       >
-        <h2 className="text-3xl font-bold mb-8 text-black select-none tracking-wide">Fbpitch</h2>
+        <h2 className="text-3xl font-bold mb-8 text-black select-none tracking-wide ml-11">Fbpitch</h2>
 
         <nav className="flex flex-col gap-4 text-lg flex-grow">
           {[ 

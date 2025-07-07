@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
 import { Button } from "../../components/ui/button";
-import { BarChart2, Edit2, Trash2 } from "lucide-react";
+import { BarChart2, Mail, Edit2, Trash2 } from "lucide-react";
 
 export default function AdminPage() {
   const [products, setProducts] = useState([]);
@@ -145,7 +145,7 @@ export default function AdminPage() {
     <div className="min-h-screen flex flex-col md:flex-row bg-white">
       <Sidebar />
       <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-5xl mx-auto w-full">
-        
+
         {/* HEADER */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80">
@@ -158,6 +158,16 @@ export default function AdminPage() {
               <BarChart2 size={18} />
               Analytics
             </Button>
+
+            {/* New Button to view contact messages */}
+            <Button
+              onClick={() => router.push("/admin/contact-messages")}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Mail size={18} />
+              View Contact Messages
+            </Button>
+
             <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
               Logout
             </Button>
@@ -225,7 +235,7 @@ export default function AdminPage() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2 mt-4 sm:mt-0">
                   <Button onClick={() => handleEditProduct(product)} variant="outline" className="flex items-center gap-2">
                     <Edit2 size={16} />

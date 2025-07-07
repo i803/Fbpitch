@@ -8,7 +8,7 @@ export default function PrivacyPolicy() {
       <section>
         <h2 className="text-2xl font-semibold mb-3 border-b border-indigo-300 pb-2">Introduction</h2>
         <p className="leading-relaxed text-lg">
-          At MBF Kits, we value your privacy and are committed to protecting your personal information...
+          At Fbpitch, we value your privacy and are committed to protecting your personal information...
         </p>
       </section>
 

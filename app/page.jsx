@@ -61,7 +61,6 @@ export default function FootballKitStore() {
   }, [darkMode]);
 
   useEffect(() => {
-    // Filter products by search term and selected category
     let filtered = products.filter((p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -102,66 +101,91 @@ export default function FootballKitStore() {
     }
   };
 
-  // Categories for filter buttons
   const categories = [
     "ALL",
     "NEW ARRIVALS",
-    "SPECIAL KITS",
     "RETRO",
+    "SPECIAL KITS",
     "NATIONAL TEAM",
     "KITS FOR KIDS",
   ];
 
   return (
-    <div className={`min-h-screen flex ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"} font-sans`}>
+    <div
+      className={`min-h-screen flex ${
+        darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+      } font-sans`}
+    >
       <Sidebar />
       <div className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity duration-300">
-            <img src="/fbpitch-logo.png" alt="Fbpitch Logo" className="h-12 w-12 object-contain" />
-            <h1 className="text-4xl font-extrabold tracking-wide uppercase text-indigo-600 font-poppins">Fbpitch</h1>
-          </Link>
+        <header className="mb-6 px-4">
+          {/* Container flex-col on mobile, flex-row on md and up */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Logo on mobile: centered top, on desktop inline left */}
+            <Link
+              href="/"
+              className="flex items-center gap-3 justify-center md:justify-start"
+            >
+              <img
+                src="/fbpitch-logo.png"
+                alt="Fbpitch Logo"
+                className="h-10 sm:h-12 w-10 sm:w-12 object-contain"
+              />
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wide uppercase text-indigo-600 font-poppins">
+                Fbpitch
+              </h1>
+            </Link>
 
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="relative">
+            {/* Search bar grows on desktop, full width on mobile */}
+            <div className="relative w-full md:flex-1 md:mx-6">
               <input
                 type="text"
                 placeholder="Search kits..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="border rounded-full px-10 py-2 w-48 sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                className="border rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
               />
-              <Search className="absolute left-3 top-2.5 text-gray-500" size={18} />
+              <Search
+                className="absolute left-3 top-2.5 text-gray-500"
+                size={18}
+              />
             </div>
 
-            <Button
-              variant="outline"
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Toggle Dark Mode"
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={handleAdminAccess}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Admin Access"
-            >
-              <Settings size={20} />
-            </Button>
-
-            <Link href="/cart">
-              <Button variant="outline" className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
-                <ShoppingCart size={20} />
-                <span className="font-semibold text-sm">{cart.length}</span>
+            {/* Icons container: right aligned */}
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Toggle Dark Mode"
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </Button>
-            </Link>
+
+              <Button
+                variant="outline"
+                onClick={handleAdminAccess}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Admin Access"
+              >
+                <Settings size={20} />
+              </Button>
+
+              <Link href="/cart">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  <ShoppingCart size={20} />
+                  <span className="font-semibold text-sm">{cart.length}</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         </header>
 
-        {/* CATEGORY FILTER BUTTONS */}
+        {/* ... rest of your component remains the same ... */}
+
         <section className="mb-6 flex flex-wrap gap-3">
           {categories.map((cat) => (
             <button
@@ -187,16 +211,27 @@ export default function FootballKitStore() {
           {filteredProducts.map((product) => (
             <div
               key={product._id || product.id}
-              className={`border rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${darkMode ? "bg-gray-800" : "bg-white"}`}
+              className={`border rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}
               onClick={() => handleAddToCartClick(product)}
               tabIndex={0}
               role="button"
-              onKeyDown={(e) => e.key === "Enter" && handleAddToCartClick(product)}
+              onKeyDown={(e) =>
+                e.key === "Enter" && handleAddToCartClick(product)
+              }
             >
-              <img src={product.image} alt={product.name} className="w-full h-48 sm:h-56 object-cover" loading="lazy" />
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-48 sm:h-56 object-cover"
+                loading="lazy"
+              />
               <div className="p-4">
                 <h2 className="text-xl font-bold mb-2">{product.name}</h2>
-                <p className="text-lg mb-4">KD {Number(product.price).toFixed(3)}</p>
+                <p className="text-lg mb-4">
+                  KD {Number(product.price).toFixed(3)}
+                </p>
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -212,12 +247,12 @@ export default function FootballKitStore() {
         </section>
 
         <footer className="mt-16 text-center text-sm">
-          <div className="flex flex-wrap justify-center gap-6 mb-6">
+          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
             <div className="flex items-center gap-2">
               <Shirt size={18} /> Retro & Current Kits
             </div>
             <div className="flex items-center gap-2">
-              <Globe size={18} /> Worldwide Shipping
+              <Globe size={18} /> Shipping Within Kuwait Only
             </div>
             <div className="flex items-center gap-2">
               <Clock size={18} /> Fast Delivery

@@ -24,7 +24,7 @@ export default function ReturnPolicy() {
       <section>
         <h2 className="text-2xl font-semibold mb-3 border-b border-indigo-300 pb-2">How to Return</h2>
         <p className="leading-relaxed text-lg">
-          Contact our support team at support@mbfkits.com with your order details to initiate a return. We'll guide you through the process.
+          Contact our support team at fbpitchhelp@gmail.com with your order details to initiate a return. We'll guide you through the process.
         </p>
       </section>
 

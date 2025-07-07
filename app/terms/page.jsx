@@ -8,7 +8,7 @@ export default function TermsAndConditions() {
       <section>
         <h2 className="text-2xl font-semibold mb-3 border-b border-indigo-300 pb-2">Acceptance of Terms</h2>
         <p className="leading-relaxed text-lg">
-          By using MBF Kits, you agree to comply with and be bound by these terms and conditions.
+          By using Fbpitch, you agree to comply with and be bound by these terms and conditions.
         </p>
       </section>
 

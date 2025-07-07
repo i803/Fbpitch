@@ -14,6 +14,7 @@ import {
   Moon,
   Sun,
   Search,
+  Instagram,
 } from "lucide-react";
 
 // Simple spinner component
@@ -33,7 +34,7 @@ export default function FootballKitStore() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [loading, setLoading] = useState(true); // Added loading state for spinner
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -69,7 +70,6 @@ export default function FootballKitStore() {
       setCart([]);
     }
 
-    // Sync dark mode with system preference if no saved preference
     const savedDarkMode = localStorage.getItem("darkMode");
     if (savedDarkMode === null) {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -175,6 +175,19 @@ export default function FootballKitStore() {
             </div>
 
             <div className="flex justify-end gap-4">
+              <a
+                href="https://www.instagram.com/fbpitch/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="outline"
+                  className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <Instagram size={20} />
+                </Button>
+              </a>
+
               <Button
                 variant="outline"
                 onClick={() => setDarkMode(!darkMode)}

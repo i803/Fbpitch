@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ThankYouPage() {
   const [darkMode, setDarkMode] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem("darkMode");
@@ -22,9 +24,35 @@ export default function ThankYouPage() {
     else document.documentElement.classList.remove("dark");
   }, [darkMode]);
 
+  useEffect(() => {
+    const allowed = sessionStorage.getItem("orderSuccess");
+    if (!allowed) {
+      router.replace("/");
+    }
+    // DON'T remove here immediately
+    // Instead, you can clear on page unload to prevent reuse on refresh or later:
+    const handleUnload = () => {
+      sessionStorage.removeItem("orderSuccess");
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+    };
+  }, [router]);
+
   return (
-    <div className={`min-h-screen flex items-center justify-center font-sans p-6 ${darkMode ? "bg-gradient-to-br from-gray-900 to-gray-700 text-white" : "bg-gradient-to-br from-white to-gray-100 text-black"}`}>
-      <div className={`rounded-xl p-10 md:p-16 max-w-xl w-full text-center shadow-2xl ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+    <div
+      className={`min-h-screen flex items-center justify-center font-sans p-6 ${
+        darkMode
+          ? "bg-gradient-to-br from-gray-900 to-gray-700 text-white"
+          : "bg-gradient-to-br from-white to-gray-100 text-black"
+      }`}
+    >
+      <div
+        className={`rounded-xl p-10 md:p-16 max-w-xl w-full text-center shadow-2xl ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
         <h1 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
           Thank You for Your Purchase!
         </h1>

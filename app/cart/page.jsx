@@ -88,6 +88,28 @@ export default function CartPage() {
     saveCartForUser(updated);
   };
 
+  const handleCOD = () => {
+    if (!username) return alert("Please login to place order.");
+
+    fetch("/api/save-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: `COD-${Date.now()}`,
+        amount: totalKWD.toFixed(3),
+        customer: username,
+        paymentMethod: "COD",
+      }),
+    })
+      .then(() => {
+        handleClearCart();
+        window.location.href = "/thank-you";
+      })
+      .catch(() => {
+        alert("Failed to save COD order to database.");
+      });
+  };
+
   if (!username) {
     return (
       <div className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
@@ -157,34 +179,48 @@ export default function CartPage() {
 
               <div className="text-xl font-semibold mb-6">Total: KD {totalKWD.toFixed(3)}</div>
 
-              <PayPalButtons
-                style={{ layout: "vertical" }}
-                createOrder={(data, actions) =>
-                  actions.order.create({
-                    purchase_units: [{ amount: { value: totalUSD } }],
-                  })
-                }
-                onApprove={(data, actions) =>
-                  actions.order.capture().then((details) => {
-                    fetch("/api/save-order", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        orderId: details.id,
-                        amount: details.purchase_units[0].amount.value,
-                        customer: username,
-                      }),
+              <div className="space-y-4">
+                <PayPalButtons
+                  style={{ layout: "vertical" }}
+                  createOrder={(data, actions) =>
+                    actions.order.create({
+                      purchase_units: [{ amount: { value: totalUSD } }],
                     })
-                      .then(() => {
-                        handleClearCart();
-                        window.location.href = "/thank-you";
+                  }
+                  onApprove={(data, actions) =>
+                    actions.order.capture().then((details) => {
+                      fetch("/api/save-order", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          orderId: details.id,
+                          amount: details.purchase_units[0].amount.value,
+                          customer: username,
+                          paymentMethod: "PayPal",
+                        }),
                       })
-                      .catch(() => {
-                        alert("Failed to save order to database.");
-                      });
-                  })
-                }
-              />
+                        .then(() => {
+                          handleClearCart();
+                          sessionStorage.setItem("orderSuccess", "true"); // set flag
+                          window.location.href = "/thank-you";
+                        })
+                        .catch(() => {
+                          alert("Failed to save order to database.");
+                        });
+                    })
+                  }
+                />
+
+                <Button
+                  onClick={() => {
+                    handleCOD();
+                    sessionStorage.setItem("orderSuccess", "true"); // set flag
+                  }}
+                  className="w-full h-[48px] bg-black text-white py-1.5 hover:bg-gray-800 text-base"
+                >
+                  Cash on Delivery (COD)
+                </Button>
+              </div>
             </>
           )}
         </main>

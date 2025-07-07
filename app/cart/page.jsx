@@ -5,11 +5,38 @@ import Link from "next/link";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { Button } from "../../components/ui/button";
 import Sidebar from "../../components/Sidebar";
+import Footer from "../../components/Footer";
+
+function Spinner() {
+  return (
+    <div className="flex justify-center items-center py-20">
+      <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+}
 
 export default function CartPage() {
   const [cart, setCart] = useState([]);
   const [username, setUsername] = useState(null);
   const [exchangeRate, setExchangeRate] = useState(3.25);
+  const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem("darkMode");
+    if (savedDarkMode === null) {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setDarkMode(prefersDark);
+      localStorage.setItem("darkMode", prefersDark.toString());
+    } else {
+      setDarkMode(savedDarkMode === "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (darkMode) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+  }, [darkMode]);
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("loggedInUser");
@@ -24,6 +51,7 @@ export default function CartPage() {
         }))
       );
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -62,9 +90,9 @@ export default function CartPage() {
 
   if (!username) {
     return (
-      <div className="min-h-screen flex flex-col md:flex-row">
+      <div className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
         <Sidebar />
-        <main className="flex-grow flex flex-col justify-center items-center bg-gray-100 p-6 md:ml-64">
+        <main className="flex-grow flex flex-col justify-center items-center p-6 md:ml-64">
           <p className="mb-4 text-lg text-center">
             Please{" "}
             <Link href="/signup" className="text-blue-600 underline">
@@ -82,10 +110,10 @@ export default function CartPage() {
 
   return (
     <PayPalScriptProvider options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}>
-      <div className="min-h-screen flex flex-col md:flex-row bg-white font-sans">
+      <div className={`min-h-screen flex flex-col md:flex-row font-sans ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
         <Sidebar />
 
-        <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-4xl mx-auto md:ml-64 text-gray-900">
+        <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-4xl mx-auto md:ml-64">
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <h1 className="text-3xl font-bold">Your Cart</h1>
             <Link href="/">
@@ -93,8 +121,10 @@ export default function CartPage() {
             </Link>
           </header>
 
-          {cart.length === 0 ? (
-            <p className="text-gray-600">Your cart is empty.</p>
+          {loading ? (
+            <Spinner />
+          ) : cart.length === 0 ? (
+            <p className="text-gray-600 dark:text-gray-400">Your cart is empty.</p>
           ) : (
             <>
               <ul className="space-y-4 mb-8">
@@ -113,7 +143,7 @@ export default function CartPage() {
                         {item.patch && item.patch !== "N/A" && <p className="text-gray-500">Patch: {item.patch}</p>}
                         {item.customName && <p className="text-gray-500">Custom: {item.customName}</p>}
                         {item.instagram && <p className="text-gray-500">Instagram: {item.instagram}</p>}
-                        <p className="text-gray-700 font-semibold">
+                        <p className="text-gray-700 font-semibold dark:text-gray-200">
                           KD {(Number(item.price) + (item.quality === "Player Version" ? 1 : 0)).toFixed(3)}
                         </p>
                       </div>

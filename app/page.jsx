@@ -16,6 +16,15 @@ import {
   Search,
 } from "lucide-react";
 
+// Simple spinner component
+function Spinner() {
+  return (
+    <div className="fixed inset-0 flex justify-center items-center bg-transparent z-50">
+      <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+}
+
 export default function FootballKitStore() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
@@ -24,6 +33,7 @@ export default function FootballKitStore() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [loading, setLoading] = useState(true); // Added loading state for spinner
   const router = useRouter();
 
   useEffect(() => {
@@ -39,6 +49,8 @@ export default function FootballKitStore() {
         setProducts([]);
         setFilteredProducts([]);
         localStorage.setItem("products", JSON.stringify([]));
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -57,7 +69,15 @@ export default function FootballKitStore() {
       setCart([]);
     }
 
-    setDarkMode(localStorage.getItem("darkMode") === "true");
+    // Sync dark mode with system preference if no saved preference
+    const savedDarkMode = localStorage.getItem("darkMode");
+    if (savedDarkMode === null) {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setDarkMode(prefersDark);
+      localStorage.setItem("darkMode", prefersDark.toString());
+    } else {
+      setDarkMode(savedDarkMode === "true");
+    }
   }, []);
 
   useEffect(() => {
@@ -201,57 +221,62 @@ export default function FootballKitStore() {
         </section>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <div
-              key={product._id || product.id}
-              className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
-              onClick={() => handleAddToCartClick(product)}
-              tabIndex={0}
-              role="button"
-              onKeyDown={(e) => e.key === "Enter" && handleAddToCartClick(product)}
-            >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-48 sm:h-56 object-cover"
-                loading="lazy"
-              />
-              <div className="p-4">
-                <h2 className="text-xl font-bold mb-2">{product.name}</h2>
-                <p className="text-lg mb-4">
-                  KD {Number(product.price).toFixed(3)}
-                </p>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddToCartClick(product);
-                  }}
-                  className="w-full bg-black text-white py-2 hover:bg-gray-800"
-                >
-                  Customize & Add to Cart
-                </Button>
+          {loading ? (
+            <Spinner />
+          ) : filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <div
+                key={product._id || product.id}
+                className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+                onClick={() => handleAddToCartClick(product)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => e.key === "Enter" && handleAddToCartClick(product)}
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-48 sm:h-56 object-cover"
+                  loading="lazy"
+                />
+                <div className="p-4">
+                  <h2 className="text-xl font-bold mb-2">{product.name}</h2>
+                  <p className="text-lg mb-4">
+                    KD {Number(product.price).toFixed(3)}
+                  </p>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCartClick(product);
+                    }}
+                    className="w-full bg-black text-white py-2 hover:bg-gray-800"
+                  >
+                    Customize & Add to Cart
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No products found.</p>
+          )}
         </section>
 
         <footer className="mt-16 text-center text-sm">
-  <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap justify-center">
-    <div className="flex items-center gap-2">
-      <Shirt size={18} /> Retro & Current Kits
-    </div>
-    <div className="flex items-center gap-2">
-      <Globe size={18} /> Shipping Within Kuwait Only
-    </div>
-    <div className="flex items-center gap-2">
-      <Clock size={18} /> Fast Delivery
-    </div>
-  </div>
-  <p>&copy; 2025 Fbpitch. All rights reserved.</p>
-</footer>
-
+          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap justify-center">
+            <div className="flex items-center gap-2">
+              <Shirt size={18} /> Retro & Current Kits
+            </div>
+            <div className="flex items-center gap-2">
+              <Globe size={18} /> Shipping Within Kuwait Only
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock size={18} /> Fast Delivery
+            </div>
+          </div>
+          <p>&copy; 2025 Fbpitch. All rights reserved.</p>
+        </footer>
       </div>
     </div>
   );

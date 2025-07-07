@@ -4,7 +4,7 @@ import Order from "../../../models/Order";
 import nodemailer from "nodemailer";
 import axios from "axios";
 
-async function sendOrderEmail({ orderId, amount, customer, paymentMethod }) {
+async function sendOrderEmail({ orderId, amount, customer, paymentMethod, promoCode, discountPercent }) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -13,26 +13,32 @@ async function sendOrderEmail({ orderId, amount, customer, paymentMethod }) {
     },
   });
 
+  let promoText = "";
+  if (promoCode) {
+    promoText = `\nPromo Code: ${promoCode}\nDiscount: ${discountPercent}%`;
+  }
+
   await transporter.sendMail({
     from: `"Fbpitch Orders" <${process.env.CONTACT_EMAIL}>`,
     to: process.env.ADMIN_NOTIFICATION_EMAIL,
     subject: "New Order Received",
-    text: `Customer: ${customer}\nAmount: KD ${amount}\nOrder ID: ${orderId}\nPayment Method: ${paymentMethod}`,
+    text: `Customer: ${customer}\nAmount: KD ${amount}\nOrder ID: ${orderId}\nPayment Method: ${paymentMethod}${promoText}`,
   });
 }
 
 export async function POST(request) {
   try {
-    const { orderId, amount, customer, paymentMethod } = await request.json();
+    const { orderId, amount, customer, paymentMethod, promoCode, discountPercent } = await request.json();
     await connectToDB();
 
     if (paymentMethod === "COD") {
-      await Order.create({ orderId, amount, customer, paymentMethod });
-      await sendOrderEmail({ orderId, amount, customer, paymentMethod });
+      // Save COD order directly (promo info saved but not validated here)
+      await Order.create({ orderId, amount, customer, paymentMethod, promoCode, discountPercent });
+      await sendOrderEmail({ orderId, amount, customer, paymentMethod, promoCode, discountPercent });
       return NextResponse.json({ success: true });
     }
 
-    // PayPal Verification for online payments
+    // PayPal payment verification
     const tokenRes = await axios({
       url: "https://api-m.paypal.com/v1/oauth2/token",
       method: "POST",
@@ -55,8 +61,8 @@ export async function POST(request) {
       return NextResponse.json({ error: "Payment not verified" }, { status: 400 });
     }
 
-    await Order.create({ orderId, amount, customer, paymentMethod: "PayPal" });
-    await sendOrderEmail({ orderId, amount, customer, paymentMethod: "PayPal" });
+    await Order.create({ orderId, amount, customer, paymentMethod: "PayPal", promoCode, discountPercent });
+    await sendOrderEmail({ orderId, amount, customer, paymentMethod: "PayPal", promoCode, discountPercent });
 
     return NextResponse.json({ success: true });
   } catch (err) {

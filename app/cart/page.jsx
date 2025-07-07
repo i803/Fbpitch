@@ -22,6 +22,25 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
+  // Promo code state
+  const [promoCode, setPromoCode] = useState("");
+  const [promoError, setPromoError] = useState("");
+  const [promoDiscountPercent, setPromoDiscountPercent] = useState(0);
+
+  // Uncomment and add promo codes here later:
+  /*
+  const promos = {
+    // FB10: 10,
+    // FB20: 20,
+    // FB30: 30,
+  };
+  */
+
+  // Promo codes object (empty for now)
+  const promos = {
+    FB10: 10,
+  };
+
   useEffect(() => {
     const savedDarkMode = localStorage.getItem("darkMode");
     if (savedDarkMode === null) {
@@ -63,12 +82,14 @@ export default function CartPage() {
       .catch(() => console.warn("Failed to fetch live exchange rate; using default."));
   }, []);
 
-  const totalKWD = cart.reduce((sum, item) => {
+  const totalKWDBeforeDiscount = cart.reduce((sum, item) => {
     const basePrice = Number(item.price) || 0;
     const playerAddon = item.quality === "Player Version" ? 1 : 0;
     return sum + basePrice + playerAddon;
   }, 0);
 
+  const discountAmount = (totalKWDBeforeDiscount * promoDiscountPercent) / 100;
+  const totalKWD = totalKWDBeforeDiscount - discountAmount;
   const totalUSD = (totalKWD * exchangeRate).toFixed(2);
 
   const saveCartForUser = (updatedCart) => {
@@ -88,6 +109,26 @@ export default function CartPage() {
     saveCartForUser(updated);
   };
 
+  const handleApplyPromo = () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      setPromoError("Please enter a promo code.");
+      setPromoDiscountPercent(0);
+      return;
+    }
+
+    // Check promo code validity
+    const discount = promos[code];
+    if (!discount) {
+      setPromoError("Invalid or expired promo code.");
+      setPromoDiscountPercent(0);
+      return;
+    }
+
+    setPromoError("");
+    setPromoDiscountPercent(discount);
+  };
+
   const handleCOD = () => {
     if (!username) return alert("Please login to place order.");
 
@@ -99,10 +140,13 @@ export default function CartPage() {
         amount: totalKWD.toFixed(3),
         customer: username,
         paymentMethod: "COD",
+        promoCode: promoCode.trim().toUpperCase() || null,
+        discountPercent: promoDiscountPercent,
       }),
     })
       .then(() => {
         handleClearCart();
+        sessionStorage.setItem("orderSuccess", "true"); // set flag to protect thank-you page
         window.location.href = "/thank-you";
       })
       .catch(() => {
@@ -112,7 +156,11 @@ export default function CartPage() {
 
   if (!username) {
     return (
-      <div className={`min-h-screen flex flex-col md:flex-row ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
+      <div
+        className={`min-h-screen flex flex-col md:flex-row ${
+          darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
+        }`}
+      >
         <Sidebar />
         <main className="flex-grow flex flex-col justify-center items-center p-6 md:ml-64">
           <p className="mb-4 text-lg text-center">
@@ -132,7 +180,11 @@ export default function CartPage() {
 
   return (
     <PayPalScriptProvider options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}>
-      <div className={`min-h-screen flex flex-col md:flex-row font-sans ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
+      <div
+        className={`min-h-screen flex flex-col md:flex-row font-sans ${
+          darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+        }`}
+      >
         <Sidebar />
 
         <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-4xl mx-auto md:ml-64">
@@ -177,7 +229,29 @@ export default function CartPage() {
                 ))}
               </ul>
 
-              <div className="text-xl font-semibold mb-6">Total: KD {totalKWD.toFixed(3)}</div>
+              {/* Total and Promo code input on same line */}
+              <div className="flex justify-between items-center mb-6">
+                <div className="text-xl font-semibold">
+                  Total: KD {totalKWD.toFixed(3)}{" "}
+                  {promoDiscountPercent > 0 && <span className="text-sm">(Discount applied)</span>}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    className="border rounded px-3 py-2 text-black dark:text-white dark:bg-gray-700"
+                  />
+                  <Button onClick={handleApplyPromo} className="py-2 px-4">
+                    Apply
+                  </Button>
+                </div>
+              </div>
+
+              {promoError && <p className="text-red-500 mb-4">{promoError}</p>}
+              {promoDiscountPercent > 0 && <p className="text-green-600 mb-4">Promo applied: {promoDiscountPercent}% off</p>}
 
               <div className="space-y-4">
                 <PayPalButtons
@@ -197,6 +271,8 @@ export default function CartPage() {
                           amount: details.purchase_units[0].amount.value,
                           customer: username,
                           paymentMethod: "PayPal",
+                          promoCode: promoCode.trim().toUpperCase() || null,
+                          discountPercent: promoDiscountPercent,
                         }),
                       })
                         .then(() => {

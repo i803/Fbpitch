@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -16,19 +17,32 @@ export default function Sidebar() {
     setIsUserLoggedIn(!!token);
   };
 
-  useEffect(() => {
-    checkLogin(); // Check on first mount
+  const syncDarkMode = () => {
+    setDarkMode(document.documentElement.classList.contains("dark"));
+  };
 
-    const handleFocus = () => checkLogin(); // Check when window gains focus
+  useEffect(() => {
+    checkLogin();
+    syncDarkMode();
+
+    const handleFocus = () => {
+      checkLogin();
+      syncDarkMode();
+    };
+
+    const observer = new MutationObserver(syncDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
     window.addEventListener("focus", handleFocus);
 
     return () => {
       window.removeEventListener("focus", handleFocus);
+      observer.disconnect();
     };
   }, []);
 
   useEffect(() => {
-    checkLogin(); // Check on route change
+    checkLogin();
   }, [pathname]);
 
   useEffect(() => {
@@ -38,6 +52,7 @@ export default function Sidebar() {
     const onKeyDown = (e) => {
       if (e.key === "Escape") setOpen(false);
     };
+
     window.addEventListener("keydown", onKeyDown);
 
     return () => {
@@ -62,22 +77,24 @@ export default function Sidebar() {
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="p-3 text-black fixed top-4 left-4 z-50 bg-white rounded-full shadow-md hover:bg-gray-200 transition"
+        className={`p-3 fixed top-4 left-4 z-50 rounded-full shadow-md transition ${
+          darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-white text-black hover:bg-gray-200"
+        }`}
       >
         {open ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-gray-100 shadow-xl z-40 flex flex-col p-6 gap-6 transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-64 shadow-xl z-40 flex flex-col p-6 gap-6 transition-transform duration-300 ${
           open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}`}
         role="navigation"
         aria-label="Sidebar navigation"
       >
-        <h2 className="text-3xl font-bold mb-8 text-black select-none tracking-wide ml-11">Fbpitch</h2>
+        <h2 className="text-3xl font-bold mb-8 select-none tracking-wide ml-11">Fbpitch</h2>
 
         <nav className="flex flex-col gap-4 text-lg flex-grow">
-          {[ 
+          {[
             { href: "/", label: "Home" },
             { href: "/return-policy", label: "Return Policy" },
             { href: "/terms", label: "Terms & Conditions" },
@@ -90,7 +107,7 @@ export default function Sidebar() {
               href={href}
               onClick={() => setOpen(false)}
               className={`hover:text-blue-600 transition ${
-                isActive(href) ? "font-bold text-blue-600" : "text-black"
+                isActive(href) ? "font-bold text-blue-600" : darkMode ? "text-white" : "text-black"
               }`}
             >
               {label}
@@ -103,7 +120,7 @@ export default function Sidebar() {
                 href="/signup"
                 onClick={() => setOpen(false)}
                 className={`hover:text-blue-600 transition ${
-                  isActive("/signup") ? "font-bold text-blue-600" : "text-black"
+                  isActive("/signup") ? "font-bold text-blue-600" : darkMode ? "text-white" : "text-black"
                 }`}
               >
                 Sign Up
@@ -112,7 +129,7 @@ export default function Sidebar() {
                 href="/login"
                 onClick={() => setOpen(false)}
                 className={`hover:text-blue-600 transition ${
-                  isActive("/login") ? "font-bold text-blue-600" : "text-black"
+                  isActive("/login") ? "font-bold text-blue-600" : darkMode ? "text-white" : "text-black"
                 }`}
               >
                 Login

@@ -238,19 +238,20 @@ export default function FootballKitStore() {
         </section>
 
         <footer className="mt-16 text-center text-sm">
-          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
-            <div className="flex items-center gap-2">
-              <Shirt size={18} /> Retro & Current Kits
-            </div>
-            <div className="flex items-center gap-2">
-              <Globe size={18} /> Shipping Within Kuwait Only
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock size={18} /> Fast Delivery
-            </div>
-          </div>
-          <p>&copy; 2025 Fbpitch. All rights reserved.</p>
-        </footer>
+  <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap justify-center">
+    <div className="flex items-center gap-2">
+      <Shirt size={18} /> Retro & Current Kits
+    </div>
+    <div className="flex items-center gap-2">
+      <Globe size={18} /> Shipping Within Kuwait Only
+    </div>
+    <div className="flex items-center gap-2">
+      <Clock size={18} /> Fast Delivery
+    </div>
+  </div>
+  <p>&copy; 2025 Fbpitch. All rights reserved.</p>
+</footer>
+
       </div>
     </div>
   );

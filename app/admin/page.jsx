@@ -117,11 +117,19 @@ export default function AdminPage() {
     }
   };
 
+  // Updated handleEditProduct to also ask for category and send it in PUT request
   const handleEditProduct = (product) => {
     const updatedName = prompt("Update product name:", product.name);
-    const updatedPrice = prompt("Update price in KWD:", product.price);
+    if (!updatedName) return;
 
-    if (!updatedName || !updatedPrice) return;
+    const updatedPrice = prompt("Update price in KWD:", product.price);
+    if (!updatedPrice) return;
+
+    const updatedCategory = prompt(
+      "Update category (NEW ARRIVALS, SPECIAL KITS, RETRO, NATIONAL TEAM, KITS FOR KIDS):",
+      product.category || "NEW ARRIVALS"
+    );
+    if (!updatedCategory) return;
 
     fetch("/api/products", {
       method: "PUT",
@@ -130,6 +138,7 @@ export default function AdminPage() {
         id: product._id,
         name: updatedName,
         price: parseFloat(updatedPrice),
+        category: updatedCategory,
       }),
     })
       .then((res) => {

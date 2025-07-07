@@ -5,7 +5,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import { Button } from "../components/ui/button";
-import { Settings, ShoppingCart, Shirt, Globe, Clock, Moon, Sun, Search } from "lucide-react";
+import {
+  Settings,
+  ShoppingCart,
+  Shirt,
+  Globe,
+  Clock,
+  Moon,
+  Sun,
+  Search,
+} from "lucide-react";
 
 export default function FootballKitStore() {
   const [cart, setCart] = useState([]);
@@ -37,11 +46,12 @@ export default function FootballKitStore() {
 
     const userToken = localStorage.getItem("userToken");
     const loggedInUser = localStorage.getItem("loggedInUser");
-
     setIsUserLoggedIn(!!userToken);
 
     if (loggedInUser) {
-      const storedCart = JSON.parse(localStorage.getItem(`cart-${loggedInUser}`) || "[]");
+      const storedCart = JSON.parse(
+        localStorage.getItem(`cart-${loggedInUser}`) || "[]"
+      );
       setCart(storedCart);
     } else {
       setCart([]);
@@ -64,11 +74,9 @@ export default function FootballKitStore() {
     let filtered = products.filter((p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
     if (selectedCategory !== "ALL") {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
-
     setFilteredProducts(filtered);
   }, [searchTerm, products, selectedCategory]);
 
@@ -79,7 +87,8 @@ export default function FootballKitStore() {
   const handleAdminAccess = async () => {
     const username = prompt("Enter Admin Username:");
     const password = prompt("Enter Admin Password:");
-    if (!username || !password) return alert("Username and Password are required");
+    if (!username || !password)
+      return alert("Username and Password are required");
 
     try {
       const res = await fetch("/api/admin-login", {
@@ -119,9 +128,7 @@ export default function FootballKitStore() {
       <Sidebar />
       <div className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10">
         <header className="mb-6 px-4">
-          {/* Container flex-col on mobile, flex-row on md and up */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Logo on mobile: centered top, on desktop inline left */}
             <Link
               href="/"
               className="flex items-center gap-3 justify-center md:justify-start"
@@ -136,28 +143,22 @@ export default function FootballKitStore() {
               </h1>
             </Link>
 
-            {/* Search bar grows on desktop, full width on mobile */}
             <div className="relative w-full md:flex-1 md:mx-6">
               <input
                 type="text"
                 placeholder="Search kits..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="border rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                className="border dark:border-gray-600 rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
               />
-              <Search
-                className="absolute left-3 top-2.5 text-gray-500"
-                size={18}
-              />
+              <Search className="absolute left-3 top-2.5 text-gray-500" size={18} />
             </div>
 
-            {/* Icons container: right aligned */}
             <div className="flex justify-end gap-4">
               <Button
                 variant="outline"
                 onClick={() => setDarkMode(!darkMode)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Toggle Dark Mode"
+                className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </Button>
@@ -165,17 +166,13 @@ export default function FootballKitStore() {
               <Button
                 variant="outline"
                 onClick={handleAdminAccess}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Admin Access"
+                className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <Settings size={20} />
               </Button>
 
               <Link href="/cart">
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
+                <Button className="flex items-center gap-2 p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">
                   <ShoppingCart size={20} />
                   <span className="font-semibold text-sm">{cart.length}</span>
                 </Button>
@@ -184,21 +181,17 @@ export default function FootballKitStore() {
           </div>
         </header>
 
-        {/* ... rest of your component remains the same ... */}
-
         <section className="mb-6 flex flex-wrap gap-3">
           {categories.map((cat) => (
             <button
               key={cat}
-              className={`px-4 py-2 rounded-full border transition-colors duration-200
-                ${
-                  selectedCategory === cat
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : darkMode
-                    ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-                }
-              `}
+              className={`px-4 py-2 rounded-full border transition-colors duration-200 ${
+                selectedCategory === cat
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : darkMode
+                  ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
+              }`}
               onClick={() => setSelectedCategory(cat)}
               aria-pressed={selectedCategory === cat}
             >
@@ -211,15 +204,13 @@ export default function FootballKitStore() {
           {filteredProducts.map((product) => (
             <div
               key={product._id || product.id}
-              className={`border rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
+              className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
                 darkMode ? "bg-gray-800" : "bg-white"
               }`}
               onClick={() => handleAddToCartClick(product)}
               tabIndex={0}
               role="button"
-              onKeyDown={(e) =>
-                e.key === "Enter" && handleAddToCartClick(product)
-              }
+              onKeyDown={(e) => e.key === "Enter" && handleAddToCartClick(product)}
             >
               <img
                 src={product.image}
@@ -237,7 +228,7 @@ export default function FootballKitStore() {
                     e.stopPropagation();
                     handleAddToCartClick(product);
                   }}
-                  className="w-full bg-black text-white py-2 hover:bg-gray-800 transition-colors"
+                  className="w-full bg-black text-white py-2 hover:bg-gray-800"
                 >
                   Customize & Add to Cart
                 </Button>

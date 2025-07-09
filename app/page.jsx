@@ -318,7 +318,7 @@ export default function FootballKitStore() {
   );
 }
 
-// ✅ Helper component to read searchParams in Suspense
+// ✅ Fixed SearchParamHandler: only run once on mount
 function SearchParamHandler({ categories, setSelectedCategory }) {
   const searchParams = useSearchParams();
   const category = searchParams.get("category")?.toUpperCase() || "ALL";
@@ -329,7 +329,9 @@ function SearchParamHandler({ categories, setSelectedCategory }) {
     } else {
       setSelectedCategory("ALL");
     }
-  }, [category, categories, setSelectedCategory]);
+    // Run only once on initial mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }

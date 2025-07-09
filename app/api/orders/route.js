@@ -1,3 +1,6 @@
+// ✅ Force this route to be dynamic to fix Vercel build error
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from "next/server";
 import { connectToDB } from "../../../lib/mongoose";
 import Order from "../../../models/Order";
@@ -43,7 +46,7 @@ export async function GET(request) {
     // Fetch orders matching filters, sorted by date descending
     const orders = await Order.find(filters).sort({ createdAt: -1 }).lean();
 
-    // Format response, including products/items in each order
+    // Format response
     const formatted = orders.map((order) => ({
       _id: order._id.toString(),
       customer: order.customer,

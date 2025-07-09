@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react"; // ✅ ADDED Suspense
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import { Button } from "../components/ui/button";
@@ -34,7 +34,6 @@ export default function FootballKitStore() {
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const categories = [
     "ALL",
@@ -45,7 +44,6 @@ export default function FootballKitStore() {
     "KITS FOR KIDS",
   ];
 
-  // On mount: fetch products and set selectedCategory from URL if any
   useEffect(() => {
     async function fetchProducts() {
       try {
@@ -62,7 +60,6 @@ export default function FootballKitStore() {
 
     fetchProducts();
 
-    // Load cart from localStorage if logged in
     const loggedInUser = localStorage.getItem("loggedInUser");
     if (loggedInUser) {
       const storedCart = JSON.parse(localStorage.getItem(`cart-${loggedInUser}`) || "[]");
@@ -71,7 +68,6 @@ export default function FootballKitStore() {
       setCart([]);
     }
 
-    // Dark mode preference
     const savedDarkMode = localStorage.getItem("darkMode");
     if (savedDarkMode === null) {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -80,19 +76,9 @@ export default function FootballKitStore() {
     } else {
       setDarkMode(savedDarkMode === "true");
     }
-
-    // Set initial selected category from URL param (if valid)
-    const urlCat = searchParams.get("category")?.toUpperCase() || "ALL";
-    if (categories.includes(urlCat)) {
-      setSelectedCategory(urlCat);
-    } else {
-      setSelectedCategory("ALL");
-    }
   }, []);
 
-  // Update filtered products and update URL param when category or searchTerm changes
   useEffect(() => {
-    // Filter out shorts (only show kits)
     let filtered = products.filter((p) => !p.shortsImage);
 
     if (selectedCategory !== "ALL") {
@@ -107,13 +93,11 @@ export default function FootballKitStore() {
 
     setFilteredProducts(filtered);
 
-    // Update URL param without reload
     const encodedCategory = encodeURIComponent(selectedCategory);
     const url = selectedCategory === "ALL" ? "/" : `/?category=${encodedCategory}`;
     router.replace(url);
   }, [selectedCategory, searchTerm, products]);
 
-  // Dark mode toggle effect
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -160,13 +144,19 @@ export default function FootballKitStore() {
         darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       } font-sans`}
     >
-      {/* Sidebar only on mobile */}
       <div className="md:hidden">
         <Sidebar />
       </div>
 
-      {/* Main content */}
       <div className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10">
+        {/* ✅ Suspense wrapper for searchParams handler */}
+        <Suspense fallback={null}>
+          <SearchParamHandler
+            categories={categories}
+            setSelectedCategory={setSelectedCategory}
+          />
+        </Suspense>
+
         <header className="mb-6 px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <Link
@@ -252,8 +242,6 @@ export default function FootballKitStore() {
                 {cat}
               </button>
             ))}
-
-            {/* Shorts category as a Link */}
             <Link href="/shorts">
               <button
                 className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
@@ -328,4 +316,20 @@ export default function FootballKitStore() {
       </div>
     </div>
   );
+}
+
+// ✅ Helper component to read searchParams in Suspense
+function SearchParamHandler({ categories, setSelectedCategory }) {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category")?.toUpperCase() || "ALL";
+
+  useEffect(() => {
+    if (categories.includes(category)) {
+      setSelectedCategory(category);
+    } else {
+      setSelectedCategory("ALL");
+    }
+  }, [category, categories, setSelectedCategory]);
+
+  return null;
 }

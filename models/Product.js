@@ -9,7 +9,9 @@ const ProductSchema = new mongoose.Schema({
     enum: ["NEW ARRIVALS", "SPECIAL KITS", "RETRO", "NATIONAL TEAM", "KITS FOR KIDS"],
     default: "NEW ARRIVALS",
   },
-}, { timestamps: true }); // Adds createdAt and updatedAt fields automatically
+  league: { type: String }, // NEW
+  patches: [{ type: String }], // NEW
+  showShorts: { type: Boolean, default: false }, // NEW
+}, { timestamps: true });
 
-// Prevent model overwrite on hot reload
 export const Product = mongoose.models.Product || mongoose.model("Product", ProductSchema);

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Sidebar from "../components/Sidebar";
-import { Button } from "../components/ui/button";
+import { useRouter } from "next/navigation";
+import Sidebar from "../../components/Sidebar";
+import { Button } from "../../components/ui/button";
 import {
   Settings,
   ShoppingCart,
@@ -25,16 +25,14 @@ function Spinner() {
   );
 }
 
-export default function FootballKitStore() {
+export default function ShortsPage() {
   const [cart, setCart] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [shorts, setShorts] = useState([]);
+  const [filteredShorts, setFilteredShorts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const categories = [
     "ALL",
@@ -43,26 +41,30 @@ export default function FootballKitStore() {
     "SPECIAL KITS",
     "NATIONAL TEAM",
     "KITS FOR KIDS",
+    "SHORTS", // new category for shorts page
   ];
 
-  // On mount: fetch products and set selectedCategory from URL if any
+  const [selectedCategory, setSelectedCategory] = useState("SHORTS");
+
   useEffect(() => {
     async function fetchProducts() {
       try {
         const res = await fetch("/api/products");
         const data = await res.json();
-        setProducts(data.products || []);
-        setLoading(false);
+        const shortsOnly = (data.products || []).filter((p) => p.shortsImage);
+        setShorts(shortsOnly);
+        setFilteredShorts(shortsOnly);
       } catch (err) {
-        console.error("Failed to fetch products:", err);
-        setProducts([]);
+        console.error("Failed to fetch shorts:", err);
+        setShorts([]);
+        setFilteredShorts([]);
+      } finally {
         setLoading(false);
       }
     }
 
     fetchProducts();
 
-    // Load cart from localStorage if logged in
     const loggedInUser = localStorage.getItem("loggedInUser");
     if (loggedInUser) {
       const storedCart = JSON.parse(localStorage.getItem(`cart-${loggedInUser}`) || "[]");
@@ -71,7 +73,6 @@ export default function FootballKitStore() {
       setCart([]);
     }
 
-    // Dark mode preference
     const savedDarkMode = localStorage.getItem("darkMode");
     if (savedDarkMode === null) {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -80,40 +81,8 @@ export default function FootballKitStore() {
     } else {
       setDarkMode(savedDarkMode === "true");
     }
-
-    // Set initial selected category from URL param (if valid)
-    const urlCat = searchParams.get("category")?.toUpperCase() || "ALL";
-    if (categories.includes(urlCat)) {
-      setSelectedCategory(urlCat);
-    } else {
-      setSelectedCategory("ALL");
-    }
   }, []);
 
-  // Update filtered products and update URL param when category or searchTerm changes
-  useEffect(() => {
-    // Filter out shorts (only show kits)
-    let filtered = products.filter((p) => !p.shortsImage);
-
-    if (selectedCategory !== "ALL") {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
-
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredProducts(filtered);
-
-    // Update URL param without reload
-    const encodedCategory = encodeURIComponent(selectedCategory);
-    const url = selectedCategory === "ALL" ? "/" : `/?category=${encodedCategory}`;
-    router.replace(url);
-  }, [selectedCategory, searchTerm, products]);
-
-  // Dark mode toggle effect
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -124,6 +93,25 @@ export default function FootballKitStore() {
     }
   }, [darkMode]);
 
+  useEffect(() => {
+    let filtered = shorts.filter((p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredShorts(filtered);
+  }, [searchTerm, shorts]);
+
+  const handleCategoryClick = (cat) => {
+    if (cat === selectedCategory) return;
+
+    setSelectedCategory(cat);
+
+    if (cat === "SHORTS") {
+      // Stay on shorts page
+    } else {
+      router.replace(`/?category=${encodeURIComponent(cat)}`);
+    }
+  };
+
   const handleAddToCartClick = (product) => {
     router.push(`/product/${product._id || product.id}`);
   };
@@ -131,8 +119,7 @@ export default function FootballKitStore() {
   const handleAdminAccess = async () => {
     const username = prompt("Enter Admin Username:");
     const password = prompt("Enter Admin Password:");
-    if (!username || !password)
-      return alert("Username and Password are required");
+    if (!username || !password) return alert("Username and Password are required");
 
     try {
       const res = await fetch("/api/admin-login", {
@@ -160,12 +147,12 @@ export default function FootballKitStore() {
         darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       } font-sans`}
     >
-      {/* Sidebar only on mobile */}
+      {/* Sidebar visible only on small screens */}
       <div className="md:hidden">
         <Sidebar />
       </div>
 
-      {/* Main content */}
+      {/* Main content area fills full width on md+ */}
       <div className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10">
         <header className="mb-6 px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -183,10 +170,10 @@ export default function FootballKitStore() {
               </h1>
             </Link>
 
-            <div className="relative w-full md:flex-1 md:mx-6">
+            <div className="relative w-full md:w-auto md:mx-0 md:flex-none">
               <input
                 type="text"
-                placeholder="Search kits..."
+                placeholder="Search shorts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="border dark:border-gray-600 rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
@@ -232,47 +219,49 @@ export default function FootballKitStore() {
               </Link>
             </div>
           </div>
+
+          {/* Categories below search bar */}
+<section className="mt-4 mb-4 overflow-x-auto w-full md:flex-1 md:mx-6">
+  <div className="flex flex-nowrap gap-3 whitespace-nowrap pb-1">
+    {categories.map((cat) => (
+      <button
+        key={cat}
+        className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
+          selectedCategory === cat
+            ? "bg-indigo-600 text-white border-indigo-600"
+            : darkMode
+            ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
+        }`}
+        onClick={() => handleCategoryClick(cat)}
+        aria-pressed={selectedCategory === cat}
+      >
+        {cat}
+      </button>
+    ))}
+
+    {/* Removed this duplicate shorts Link button */}
+    {/* <Link href="/shorts">
+      <button
+        className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
+          darkMode
+            ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
+        }`}
+      >
+        SHORTS
+      </button>
+    </Link> */}
+  </div>
+</section>
+
         </header>
-
-        <section className="mb-6 overflow-x-auto">
-          <div className="flex flex-nowrap gap-3 whitespace-nowrap pb-1">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
-                  selectedCategory === cat
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : darkMode
-                    ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-                }`}
-                onClick={() => setSelectedCategory(cat)}
-                aria-pressed={selectedCategory === cat}
-              >
-                {cat}
-              </button>
-            ))}
-
-            {/* Shorts category as a Link */}
-            <Link href="/shorts">
-              <button
-                className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
-                  darkMode
-                    ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-                }`}
-              >
-                SHORTS
-              </button>
-            </Link>
-          </div>
-        </section>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {loading ? (
             <Spinner />
-          ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+          ) : filteredShorts.length > 0 ? (
+            filteredShorts.map((product) => (
               <div
                 key={product._id || product.id}
                 className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
@@ -284,16 +273,14 @@ export default function FootballKitStore() {
                 onKeyDown={(e) => e.key === "Enter" && handleAddToCartClick(product)}
               >
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={product.shortsImage}
+                  alt={`${product.name} Shorts`}
                   className="w-full h-48 sm:h-56 object-cover"
                   loading="lazy"
                 />
                 <div className="p-4">
-                  <h2 className="text-xl font-bold mb-2">{product.name}</h2>
-                  <p className="text-lg mb-4">
-                    KD {Number(product.price).toFixed(3)}
-                  </p>
+                  <h2 className="text-xl font-bold mb-2">{product.name} Shorts</h2>
+                  <p className="text-lg mb-4">KD {Number(product.price).toFixed(3)}</p>
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -307,7 +294,7 @@ export default function FootballKitStore() {
               </div>
             ))
           ) : (
-            <p>No products found.</p>
+            <p>No shorts found.</p>
           )}
         </section>
 

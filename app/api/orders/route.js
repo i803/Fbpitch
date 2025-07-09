@@ -7,9 +7,6 @@ export async function GET(request) {
   try {
     const url = new URL(request.url);
     const headerToken = request.headers.get("authorization")?.replace("Bearer ", "");
-    // Optionally disable token in query for security
-    // const queryToken = url.searchParams.get("adminToken");
-    // const token = headerToken || queryToken;
     const token = headerToken;
 
     if (!token) {
@@ -43,13 +40,16 @@ export async function GET(request) {
       filters.customer = { $regex: customer, $options: "i" };
     }
 
+    // Fetch orders matching filters, sorted by date descending
     const orders = await Order.find(filters).sort({ createdAt: -1 }).lean();
 
+    // Format response, including products/items in each order
     const formatted = orders.map((order) => ({
       _id: order._id.toString(),
       customer: order.customer,
       amount: order.amount,
       createdAt: order.createdAt,
+      products: order.products || order.items || [],
     }));
 
     return NextResponse.json({ orders: formatted });

@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -7,262 +6,300 @@ import Sidebar from "../../components/Sidebar";
 import { Button } from "../../components/ui/button";
 import { BarChart2, Mail, Edit2, Trash2 } from "lucide-react";
 
+// --- League & Patch Mappings ---
+const LEAGUES = [
+  "Premier League",
+  "La Liga",
+  "Serie A",
+  "Bundesliga",
+  "Ligue 1",
+  "Champions League",
+  "Europa League",
+  "Saudi Pro League",
+  "AFC Champions League",
+  "International",
+];
+
+const PATCHES = {
+  "Premier League": ["Champions League", "FA Cup", "Community Shield"],
+  "La Liga": ["Champions League", "Copa del Rey"],
+  "Serie A": ["Champions League", "Coppa Italia"],
+  "Bundesliga": ["Champions League", "DFB Pokal"],
+  "Ligue 1": ["Champions League", "Coupe de France"],
+  "Champions League": ["UEFA Starball"],
+  "Europa League": ["Europa Patch"],
+  "Saudi Pro League": ["AFC Champions League"],
+  "AFC Champions League": ["ACL Patch"],
+  "International": ["World Cup", "EURO", "AFCON"],
+};
+
+
 export default function AdminPage() {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
-    name: "",
-    price: "",
-    image: "",
-    category: "NEW ARRIVALS",
+    name: "", price: "", image: "", shortsImage: "",
+    category: "NEW ARRIVALS", league: "", patches: [], showShorts: false,
   });
   const [loading, setLoading] = useState(false);
+  const [editId, setEditId] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
-      console.log("[AdminPage] No token, redirecting to login...");
-      router.push("/admin/login");
-    } else {
-      fetchProducts();
-    }
+    if (!localStorage.getItem("adminToken")) router.push("/admin/login");
+    else fetchProducts();
   }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch("/api/products");
-      const data = await res.json();
-      setProducts(data.products || []);
-    } catch (err) {
-      console.error("[AdminPage] Failed to fetch products:", err);
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     router.push("/admin/login");
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      setProducts(data.products || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
+  const uploadImage = async (file) => {
     const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
     const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-
-    if (!preset || !cloud) {
-      alert("Cloudinary credentials missing.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", preset);
-
-    try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (data.secure_url) {
-        setNewProduct((prev) => ({ ...prev, image: data.secure_url }));
-      } else {
-        alert("Image upload failed");
-      }
-    } catch {
-      alert("Error uploading image");
-    }
+    if (!preset || !cloud) return alert("Missing Cloudinary creds");
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", preset);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/upload`, { method: "POST", body: fd });
+    return (await res.json()).secure_url;
   };
 
-  const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.price || !newProduct.image || !newProduct.category) return;
+  const handleAddOrUpdate = async () => {
+    const { name, price, image, shortsImage, category, league, patches, showShorts } = newProduct;
+    if (!name || !price || !image || !category || !league) return;
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newProduct.name,
-          price: parseFloat(newProduct.price),
-          image: newProduct.image,
-          category: newProduct.category,
-        }),
-      });
+    const body = {
+      name,
+      price: parseFloat(price),
+      image,
+      shortsImage,
+      category,
+      league,
+      patches,
+      showShorts,
+      ...(editId && { id: editId }),
+    };
 
-      if (res.ok) {
-        setNewProduct({ name: "", price: "", image: "", category: "NEW ARRIVALS" });
-        fetchProducts();
-      } else {
-        alert("Failed to add product");
-      }
-    } catch {
-      alert("Error adding product");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRemoveProduct = async (id) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
-
-    try {
-      const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
-      if (res.ok) fetchProducts();
-      else alert("Failed to delete product");
-    } catch {
-      alert("Error deleting product");
-    }
-  };
-
-  // Updated handleEditProduct to also ask for category and send it in PUT request
-  const handleEditProduct = (product) => {
-    const updatedName = prompt("Update product name:", product.name);
-    if (!updatedName) return;
-
-    const updatedPrice = prompt("Update price in KWD:", product.price);
-    if (!updatedPrice) return;
-
-    const updatedCategory = prompt(
-      "Update category (NEW ARRIVALS, SPECIAL KITS, RETRO, NATIONAL TEAM, KITS FOR KIDS):",
-      product.category || "NEW ARRIVALS"
-    );
-    if (!updatedCategory) return;
-
-    fetch("/api/products", {
-      method: "PUT",
+    const res = await fetch("/api/products", {
+      method: editId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: product._id,
-        name: updatedName,
-        price: parseFloat(updatedPrice),
-        category: updatedCategory,
-      }),
-    })
-      .then((res) => {
-        if (res.ok) fetchProducts();
-        else alert("Failed to update product");
-      })
-      .catch(() => alert("Error updating product"));
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      setNewProduct({
+        name: "", price: "", image: "", shortsImage: "",
+        category: "NEW ARRIVALS", league: "", patches: [], showShorts: false,
+      });
+      setEditId(null);
+      fetchProducts();
+    } else alert("Error saving product");
+
+    setLoading(false);
   };
 
-  const isFormValid = newProduct.name && newProduct.price && newProduct.image;
+  const startEdit = (prod) => {
+    setNewProduct({ ...prod, price: prod.price.toString() });
+    setEditId(prod._id);
+  };
+
+  const deleteProd = async (id) => {
+    if (!confirm("Delete this product?")) return;
+    await fetch(`/api/products?id=${id}`, { method: "DELETE" });
+    fetchProducts();
+  };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-white">
+    <div className="min-h-screen flex bg-gray-100 text-gray-800">
       <Sidebar />
-      <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-5xl mx-auto w-full">
 
-        {/* HEADER */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80">
-            <img src="/fbpitch-logo.png" alt="Fbpitch Logo" className="h-10 w-10 object-contain" />
-            <h1 className="text-3xl font-extrabold uppercase text-indigo-600 font-poppins">Fbpitch (Admin)</h1>
+      <main className="flex-grow p-8 max-w-7xl mx-auto space-y-10">
+        {/* Header */}
+        <header className="flex justify-between items-center">
+          <Link href="/" className="inline-flex items-center gap-3 text-indigo-600 hover:opacity-80">
+            <img src="/fbpitch-logo.png" className="h-12 w-12" />
+            <h1 className="text-4xl font-extrabold uppercase">Fbpitch Admin</h1>
           </Link>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <Button onClick={() => router.push("/admin/analytics")} className="flex items-center gap-2">
-              <BarChart2 size={18} />
-              Analytics
-            </Button>
-
-            {/* New Button to view contact messages */}
-            <Button
-              onClick={() => router.push("/admin/contact-messages")}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Mail size={18} />
-              View Contact Messages
-            </Button>
-
+            <Button onClick={() => router.push("/admin/analytics")} variant="secondary" className="flex items-center gap-2">
+  <BarChart2 size={16} />
+  <span>Analytics</span>
+</Button>
+<Button
+    onClick={() => router.push("/admin/contact-messages")}
+    className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+  >
+    <Mail size={16} />
+    <span>Messages</span>
+  </Button>
             <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
               Logout
             </Button>
           </div>
         </header>
 
-        {/* ADD PRODUCT */}
-        <section className="bg-gray-50 p-4 sm:p-6 rounded-xl shadow mb-10">
-          <h2 className="text-2xl sm:text-3xl font-semibold mb-6">Add New Product</h2>
-          <div className="space-y-4">
-            <input
-              className="border p-3 w-full"
-              placeholder="Product Name"
-              value={newProduct.name}
-              onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-            />
-            <input
-              className="border p-3 w-full"
-              placeholder="Price in KWD"
-              type="number"
-              value={newProduct.price}
-              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-            />
-            <select
-              className="border p-3 w-full"
-              value={newProduct.category}
-              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-            >
-              <option value="NEW ARRIVALS">NEW ARRIVALS</option>
-              <option value="SPECIAL KITS">SPECIAL KITS</option>
-              <option value="RETRO">RETRO</option>
-              <option value="NATIONAL TEAM">NATIONAL TEAM</option>
-              <option value="KITS FOR KIDS">KITS FOR KIDS</option>
-            </select>
-            <input type="file" accept="image/*" onChange={handleImageUpload} />
-            {newProduct.image && <img src={newProduct.image} alt="Preview" className="h-24 mt-2" />}
-            <Button
-              onClick={handleAddProduct}
-              className="w-full bg-black text-white hover:bg-gray-800"
-              disabled={!isFormValid || loading}
-            >
-              {loading ? "Adding..." : "Add Product"}
+        {/* Add Product Form */}
+        <section className="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 bg-indigo-600 px-4 py-1 rounded-bl-xl text-white uppercase tracking-wide">
+            {editId ? "Edit Product" : "Add New Product"}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input label="Name" value={newProduct.name} onChange={(v) => setNewProduct((p) => ({ ...p, name: v }))} />
+            <Input label="Price (KWD)" type="number" value={newProduct.price} onChange={(v) => setNewProduct((p) => ({ ...p, price: v }))} />
+            <Select label="Category" value={newProduct.category} options={["NEW ARRIVALS", "SPECIAL KITS", "RETRO", "NATIONAL TEAM", "KITS FOR KIDS"]} onChange={(v) => setNewProduct((p) => ({ ...p, category: v }))} />
+            <Select label="League" value={newProduct.league} options={LEAGUES} onChange={(v) => setNewProduct((p) => ({ ...p, league: v, patches: [] }))} />
+
+            {!!newProduct.league && (
+              <div className="md:col-span-2">
+                <span className="font-medium">Patches:</span>
+                <div className="flex flex-wrap gap-3 mt-1">
+                  {PATCHES[newProduct.league]?.map((patch) => (
+                    <label key={patch} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={newProduct.patches.includes(patch)}
+                        onChange={() => {
+                          setNewProduct((p) => ({
+                            ...p,
+                            patches: p.patches.includes(patch)
+                              ? p.patches.filter((pt) => pt !== patch)
+                              : [...p.patches, patch],
+                          }));
+                        }}
+                      />
+                      {patch}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="col-span-1 md:col-span-2">
+              <label className="block font-medium mb-1">Show Shorts?</label>
+              <input
+                type="checkbox"
+                checked={newProduct.showShorts}
+                onChange={(e) => setNewProduct((p) => ({ ...p, showShorts: e.target.checked }))}
+              />
+            </div>
+
+            <ImageUpload label="Jersey Image" onUpload={(url) => setNewProduct((p) => ({ ...p, image: url }))} current={newProduct.image} />
+            {newProduct.showShorts && (
+              <ImageUpload label="Shorts Image" onUpload={(url) => setNewProduct((p) => ({ ...p, shortsImage: url }))} current={newProduct.shortsImage} />
+            )}
+          </div>
+
+          <div className="mt-6 pt-4 border-t flex justify-end gap-3">
+            <Button variant="outline" onClick={() => {
+              setNewProduct({ name: "", price: "", image: "", shortsImage: "", category: "NEW ARRIVALS", league: "", patches: [], showShorts: false });
+              setEditId(null);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddOrUpdate} disabled={loading}>
+              {loading ? "Saving..." : editId ? "Update Product" : "Add Product"}
             </Button>
           </div>
         </section>
 
-        {/* MANAGE PRODUCTS */}
-        <section>
-          <h2 className="text-2xl sm:text-3xl font-semibold mb-6">Manage Products</h2>
-          {products.length === 0 ? (
-            <p>No products available.</p>
-          ) : (
-            products.map((product) => (
-              <div
-                key={product._id}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between border p-4 rounded mb-4 gap-4"
-              >
-                <div className="flex items-center gap-4">
-                  <img src={product.image} alt={product.name} className="h-20 w-20 object-cover" />
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-semibold">{product.name}</h3>
-                    <p>KD {Number(product.price).toFixed(3)}</p>
-                    {product.category && (
-                      <p className="text-sm text-gray-500">Category: {product.category}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-2 mt-4 sm:mt-0">
-                  <Button onClick={() => handleEditProduct(product)} variant="outline" className="flex items-center gap-2">
-                    <Edit2 size={16} />
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => handleRemoveProduct(product._id)}
-                    className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
-                  >
-                    <Trash2 size={16} />
-                    Remove
-                  </Button>
-                </div>
+        {/* Product Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((prod) => (
+            <div key={prod._id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-xl transition flex flex-col justify-between">
+              <img src={prod.image} alt={prod.name} className="h-36 w-full object-cover rounded" />
+              <div className="mt-4 flex-grow">
+                <h3 className="text-lg font-semibold">{prod.name}</h3>
+                <p className="text-indigo-600 font-bold">KD {prod.price.toFixed(3)}</p>
+                <p className="text-sm text-gray-500">{prod.category}</p>
+                {prod.league && <p className="text-sm">League: {prod.league}</p>}
+                {prod.showShorts && <p className="text-sm text-green-600">✓ Shorts included</p>}
               </div>
-            ))
-          )}
+              <div className="mt-4 flex gap-2">
+                <Button
+  variant="outline"
+  size="sm"
+  onClick={() => startEdit(prod)}
+  className="flex items-center gap-1"
+>
+  <Edit2 size={14} />
+  <span>Edit</span>
+</Button>
+                <Button
+  size="sm"
+  onClick={() => deleteProd(prod._id)}
+  className="bg-red-600 text-white hover:bg-red-700 flex items-center gap-1"
+>
+  <Trash2 size={14} />
+  <span>Delete</span>
+</Button>
+              </div>
+            </div>
+          ))}
         </section>
       </main>
     </div>
   );
+}
+
+// --- UI Components ---
+function Input({ label, ...props }) {
+  return (
+    <label className="flex flex-col">
+      <span className="font-medium mb-1">{label}</span>
+      <input className="border p-2 rounded focus:ring-2 focus:ring-indigo-400" {...props} />
+    </label>
+  );
+}
+
+function Select({ label, options, ...props }) {
+  return (
+    <label className="flex flex-col">
+      <span className="font-medium mb-1">{label}</span>
+      <select className="border p-2 rounded focus:ring-2 focus:ring-indigo-400" {...props}>
+        <option value="">Select {label}</option>
+        {options.map((o) => <option key={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function ImageUpload({ label, onUpload, current }) {
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium mb-1">{label}</span>
+      <input type="file" accept="image/*" onChange={async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const url = await uploadCloudinary(file);
+          onUpload(url);
+        }
+      }} />
+      {current && <img src={current} alt={label} className="mt-2 h-24 w-full object-contain rounded" />}
+    </div>
+  );
+}
+
+async function uploadCloudinary(file) {
+  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", preset);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/upload`, { method: "POST", body: fd });
+  const json = await res.json();
+  return json.secure_url;
 }

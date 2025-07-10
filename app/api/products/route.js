@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "../../../lib/mongoose";
 import { Product } from "../../../models/Product";
 
+// GET all products
 export async function GET() {
   try {
     await connectToDB();
@@ -12,16 +13,18 @@ export async function GET() {
       name: p.name,
       price: p.price,
       image: p.image,
-      shortsImage: p.shortsImage || null, // ✅ include shortsImage
+      shortsImage: typeof p.shortsImage === "string" ? p.shortsImage : p.shortsImage?.secure_url || null,
+      longSleevesImage: typeof p.longSleevesImage === "string" ? p.longSleevesImage : p.longSleevesImage?.secure_url || null, // ✅
       category: p.category || "NEW ARRIVALS",
       league: p.league || null,
-      patches: p.patches || [],
-      showShorts: p.showShorts || false,
+      patches: Array.isArray(p.patches) ? p.patches : [],
+      showShorts: !!p.showShorts,
+      showLongSleeves: !!p.showLongSleeves,
     }));
 
     return NextResponse.json({ products: formatted });
   } catch (err) {
-    console.error("[GET] Error fetching products:", err);
+    console.error("[GET] Failed to fetch products:", err);
     return NextResponse.json(
       { success: false, message: "Failed to fetch products" },
       { status: 500 }
@@ -29,6 +32,7 @@ export async function GET() {
   }
 }
 
+// POST a new product
 export async function POST(request) {
   try {
     await connectToDB();
@@ -36,14 +40,16 @@ export async function POST(request) {
       name,
       price,
       image,
-      shortsImage, // ✅ accept shortsImage
+      shortsImage,
+      longSleevesImage, // ✅
       category,
       league,
       patches,
       showShorts,
+      showLongSleeves,
     } = await request.json();
 
-    if (!name || !price || !image || !category) {
+    if (!name || !price || !image || !category || !league) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
@@ -54,16 +60,18 @@ export async function POST(request) {
       name,
       price,
       image,
-      shortsImage: shortsImage || null, // ✅ save it
+      shortsImage: typeof shortsImage === "string" ? shortsImage : shortsImage?.secure_url || null,
+      longSleevesImage: typeof longSleevesImage === "string" ? longSleevesImage : longSleevesImage?.secure_url || null, // ✅
       category,
-      league: league || null,
-      patches: patches || [],
-      showShorts: showShorts || false,
+      league,
+      patches: Array.isArray(patches) ? patches : [],
+      showShorts: !!showShorts,
+      showLongSleeves: !!showLongSleeves,
     });
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[POST] Error creating product:", err);
+    console.error("[POST] Failed to create product:", err);
     return NextResponse.json(
       { success: false, message: "Failed to create product" },
       { status: 500 }
@@ -71,6 +79,7 @@ export async function POST(request) {
   }
 }
 
+// PUT (update) a product
 export async function PUT(request) {
   try {
     await connectToDB();
@@ -78,14 +87,17 @@ export async function PUT(request) {
       id,
       name,
       price,
+      image,
+      shortsImage,
+      longSleevesImage, // ✅
       category,
       league,
       patches,
       showShorts,
-      shortsImage, // ✅ allow update
+      showLongSleeves,
     } = await request.json();
 
-    if (!id || !name || !price || !category) {
+    if (!id || !name || !price || !image || !category || !league) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
@@ -95,16 +107,19 @@ export async function PUT(request) {
     await Product.findByIdAndUpdate(id, {
       name,
       price,
+      image,
+      shortsImage: typeof shortsImage === "string" ? shortsImage : shortsImage?.secure_url || null,
+      longSleevesImage: typeof longSleevesImage === "string" ? longSleevesImage : longSleevesImage?.secure_url || null, // ✅
       category,
-      league: league || null,
-      patches: patches || [],
-      showShorts: showShorts || false,
-      shortsImage: shortsImage || null, // ✅ update if provided
+      league,
+      patches: Array.isArray(patches) ? patches : [],
+      showShorts: !!showShorts,
+      showLongSleeves: !!showLongSleeves,
     });
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[PUT] Error updating product:", err);
+    console.error("[PUT] Failed to update product:", err);
     return NextResponse.json(
       { success: false, message: "Failed to update product" },
       { status: 500 }
@@ -112,6 +127,7 @@ export async function PUT(request) {
   }
 }
 
+// DELETE a product
 export async function DELETE(request) {
   try {
     await connectToDB();
@@ -128,7 +144,7 @@ export async function DELETE(request) {
     await Product.findByIdAndDelete(id);
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[DELETE] Error deleting product:", err);
+    console.error("[DELETE] Failed to delete product:", err);
     return NextResponse.json(
       { success: false, message: "Failed to delete product" },
       { status: 500 }

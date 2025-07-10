@@ -15,13 +15,16 @@ export default function ProductDetails({ params }) {
   const [customName, setCustomName] = useState("");
   const [instagram, setInstagram] = useState("");
   const [addShorts, setAddShorts] = useState(false);
+  const [loadingProduct, setLoadingProduct] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
       try {
         const res = await fetch("/api/products");
+        if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
-        const found = data.products.find((p) => p._id === id || String(p.id) === id);
+        const found = data.products.find((p) => p._id === id);
 
         if (found) setProduct(found);
         else {
@@ -32,6 +35,8 @@ export default function ProductDetails({ params }) {
         console.error("Failed to load product:", err);
         alert("Error loading product");
         router.push("/");
+      } finally {
+        setLoadingProduct(false);
       }
     }
 
@@ -41,19 +46,22 @@ export default function ProductDetails({ params }) {
   const validateInputs = () => {
     if (!size) return "Please select a size.";
     if (!quality) return "Please select a quality.";
-    if (!sleeve) return "Please select a sleeve length.";
-    if (!instagram.trim() || !instagram.startsWith("@"))
+    if (product?.showLongSleeves && !sleeve) return "Please select a sleeve length.";
+    if (!instagram.trim() || !instagram.trim().startsWith("@"))
       return "Please enter a valid Instagram handle starting with @.";
+    if (/\s/.test(instagram.trim()))
+      return "Instagram handle cannot contain spaces.";
     return null;
   };
 
   const calculatePrice = () => {
+    if (!product) return "0.000";
     let extra = 0;
     if (sleeve === "Long Sleeve") extra += 0.5;
     if (patch !== "N/A") extra += 0.5;
     if (customName.trim()) extra += 1;
     if (quality === "Player Version") extra += 1;
-    if (addShorts) extra += 2; // shorts cost 2 KWD
+    if (addShorts) extra += 2;
 
     return (Number(product.price) + extra).toFixed(3);
   };
@@ -69,6 +77,8 @@ export default function ProductDetails({ params }) {
       return;
     }
 
+    setAddingToCart(true);
+
     const newItem = {
       ...product,
       size,
@@ -80,24 +90,34 @@ export default function ProductDetails({ params }) {
       addShorts,
       price: Number(calculatePrice()),
       image: product.image,
+      shortsImage: product.shortsImage || null,
     };
 
     const cartKey = `cart-${loggedInUser}`;
     const cart = JSON.parse(localStorage.getItem(cartKey) || "[]");
     cart.push(newItem);
     localStorage.setItem(cartKey, JSON.stringify(cart));
+    setAddingToCart(false);
     router.push("/cart");
   };
 
+  if (loadingProduct) return <p className="text-center mt-10">Loading product...</p>;
   if (!product) return null;
 
-  const availablePatches = product.patches || [];
   const sizes = ["S", "M", "L", "XL", "2XL"];
+  const availablePatches = Array.isArray(product.patches) ? product.patches : [];
 
   return (
     <div className="max-w-xl mx-auto mt-10 px-4">
       <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
       <img src={product.image} alt={product.name} className="w-full h-56 object-cover mb-6 rounded-md" />
+      {product.showLongSleeves && product.longSleevesImage && (
+        <img
+          src={product.longSleevesImage}
+          alt="Long Sleeves Version"
+          className="w-full h-56 object-cover mb-6 rounded-md border"
+        />
+      )}
 
       <div className="mb-4">
         <label className="block mb-1 font-semibold">Size *</label>
@@ -121,42 +141,32 @@ export default function ProductDetails({ params }) {
 
       <div className="mb-4">
         <label className="block mb-1 font-semibold">Quality *</label>
-        <select
-          className="border rounded-md w-full p-2"
-          value={quality}
-          onChange={(e) => setQuality(e.target.value)}
-        >
+        <select className="border rounded-md w-full p-2" value={quality} onChange={(e) => setQuality(e.target.value)}>
           <option value="">Select</option>
           <option value="Fan Version">Fan Version</option>
           <option value="Player Version">Player Version +1 KWD</option>
         </select>
       </div>
 
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Sleeve Length *</label>
-        <select
-          className="border rounded-md w-full p-2"
-          value={sleeve}
-          onChange={(e) => setSleeve(e.target.value)}
-        >
-          <option value="">Select</option>
-          <option value="Short Sleeve">Short Sleeve</option>
-          <option value="Long Sleeve">Long Sleeve +500 fils</option>
-        </select>
-      </div>
+      {product.showLongSleeves && (
+        <div className="mb-4">
+          <label className="block mb-1 font-semibold">Sleeve Length *</label>
+          <select className="border rounded-md w-full p-2" value={sleeve} onChange={(e) => setSleeve(e.target.value)}>
+            <option value="">Select</option>
+            <option value="Short Sleeve">Short Sleeve</option>
+            <option value="Long Sleeve">Long Sleeve +500 fils</option>
+          </select>
+        </div>
+      )}
 
       {availablePatches.length > 0 && (
         <div className="mb-4">
           <label className="block mb-1 font-semibold">Patch (Optional)</label>
-          <select
-            className="border rounded-md w-full p-2"
-            value={patch}
-            onChange={(e) => setPatch(e.target.value)}
-          >
+          <select className="border rounded-md w-full p-2" value={patch} onChange={(e) => setPatch(e.target.value)}>
             <option value="N/A">N/A</option>
-            {availablePatches.map((patchOption, idx) => (
-              <option key={idx} value={patchOption}>
-                {patchOption} +500 fils
+            {availablePatches.map((p, idx) => (
+              <option key={idx} value={p}>
+                {p} +500 fils
               </option>
             ))}
           </select>
@@ -202,9 +212,12 @@ export default function ProductDetails({ params }) {
 
       <button
         onClick={addToCart}
-        className="bg-black text-white w-full py-3 rounded-md font-semibold hover:bg-gray-800 transition"
+        disabled={addingToCart}
+        className={`w-full py-3 rounded-md font-semibold transition ${
+          addingToCart ? "bg-gray-600 cursor-not-allowed" : "bg-black text-white hover:bg-gray-800"
+        }`}
       >
-        Add to Cart - KD {calculatePrice()}
+        {addingToCart ? "Adding..." : `Add to Cart - KD ${calculatePrice()}`}
       </button>
     </div>
   );

@@ -117,32 +117,35 @@ export default function CartPage() {
   };
 
   const validateForm = () => {
-    // Trim phone before validation
-    const phoneTrimmed = addressData.phone.trim();
-    const { firstName, lastName, street, city, state } = addressData;
+  // Trim phone before validation
+  const phoneTrimmed = addressData.phone.trim();
+  const { firstName, lastName, street, city, state } = addressData;
 
-    if (!firstName || !lastName || !phoneTrimmed || !street || !city || !state) {
-      setFormError("All required fields must be filled.");
-      return false;
-    }
+  if (!firstName || !lastName || !phoneTrimmed || !street || !city || !state) {
+    setFormError("All required fields must be filled.");
+    return false;
+  }
 
-    if (!/^(5|6|9)\d{7}$/.test(phoneTrimmed)) {
-      setFormError("Phone must be a valid 8-digit Kuwait number.");
-      return false;
-    }
+  if (!/^(5|6|9)\d{7}$/.test(phoneTrimmed)) {
+    setFormError("Phone must be a valid 8-digit Kuwait number.");
+    return false;
+  }
 
-    setFormError("");
-    // Save trimmed phone to localStorage and also update state to trimmed phone
-    const newAddressData = { ...addressData, phone: phoneTrimmed };
-    setAddressData(newAddressData);
-    localStorage.setItem("shippingAddress", JSON.stringify(newAddressData));
-    return true;
-  };
+  setFormError("");
+  // Save trimmed phone to localStorage and also update state to trimmed phone
+  const newAddressData = { ...addressData, phone: phoneTrimmed };
+  setAddressData(newAddressData);
+  localStorage.setItem("shippingAddress", JSON.stringify(newAddressData));
+  return true;
+};
 
-  const sendOrder = async (orderId, amount, method) => {
-    // Log addressData.phone before sending for debugging
-    console.log("Sending order with phone:", addressData.phone);
+const handleClearCart = () => {
+  setCart([]);
+  if (username) localStorage.removeItem(`cart-${username}`);
+};
 
+const sendOrder = async (orderId, amount, method) => {
+  try {
     const res = await fetch("/api/save-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -151,7 +154,7 @@ export default function CartPage() {
         amount,
         customer: username,
         paymentMethod: method,
-        promoCode: promoCode.trim().toUpperCase() || null,
+        promoCode: promoCode?.trim()?.toUpperCase() || null,
         discountPercent: promoDiscountPercent,
         address: addressData,
         items: cart,
@@ -160,24 +163,31 @@ export default function CartPage() {
 
     if (!res.ok) {
       const errorData = await res.json();
-      alert("Failed to save order: " + errorData.error);
-      throw new Error(errorData.error);
+      throw new Error(errorData.error || "Unknown server error");
     }
 
     handleClearCart();
     sessionStorage.setItem("orderSuccess", "true");
     window.location.href = "/thank-you";
-  };
+  } catch (error) {
+    console.error("Send order failed:", error);
+    throw error;
+  }
+};
+
+
 
   const handleCOD = async () => {
-    if (!username) return alert("Please login to place order.");
-    if (!validateForm()) return;
-    try {
-      await sendOrder(`COD-${Date.now()}`, totalKWD.toFixed(3), "COD");
-    } catch (err) {
-      alert("Failed to save order.");
-    }
-  };
+  if (!username) return alert("Please login to place order.");
+  if (!validateForm()) return;
+
+  try {
+    await sendOrder(`COD-${Date.now()}`, totalKWD.toFixed(3), "COD");
+  } catch (err) {
+    alert("An error occurred while placing your order: " + err.message);
+  }
+};
+
 
   if (!username) {
     return (
@@ -420,14 +430,17 @@ export default function CartPage() {
                     actions.order.create({ purchase_units: [{ amount: { value: totalUSD } }] })
                   }
                   onApprove={async (data, actions) => {
-                    const details = await actions.order.capture();
-                    if (!validateForm()) return;
-                    try {
-                      await sendOrder(details.id, details.purchase_units[0].amount.value, "PayPal");
-                    } catch (err) {
-                      alert("Failed to save order.");
-                    }
-                  }}
+  try {
+    const details = await actions.order.capture();
+    if (!validateForm()) return;
+
+    await sendOrder(details.id, details.purchase_units[0].amount.value, "PayPal");
+  } catch (err) {
+    alert("PayPal payment failed or was canceled: " + err.message);
+  }
+}}
+
+
                 />
                 <Button
                   onClick={handleCOD}

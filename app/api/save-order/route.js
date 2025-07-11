@@ -80,25 +80,30 @@ async function appendOrderToGoogleSheets(order) {
 
     const sheets = google.sheets({ version: "v4", auth });
 
-    const values = [
-      [
-        order.orderId,
-        order.customer,
-        order.amount,
-        order.paymentMethod,
-        order.promoCode || "",
-        order.discountPercent || "",
-        JSON.stringify(order.items),
-        order.address.firstName,
-        order.address.lastName,
-        order.address.phone,
-        order.address.street,
-        order.address.city,
-        order.address.state,
-        order.address.postal || "",
-        new Date().toLocaleString(),
-      ],
-    ];
+    const values = order.items.map((item) => [
+      order.orderId,
+      order.customer,
+      order.paymentMethod,
+      order.promoCode || "",
+      order.discountPercent || "",
+      item.name,
+      item.size || "",
+      item.quality || "",
+      item.sleeve || "",
+      item.patch || "",
+      item.customName || "",
+      item.instagram || "",
+      item.addShorts ? "Yes" : "No",
+      parseFloat(item.price).toFixed(3),
+      order.address.firstName,
+      order.address.lastName,
+      order.address.phone,
+      order.address.street,
+      order.address.city,
+      order.address.state,
+      order.address.postal || "",
+      new Date().toLocaleString(),
+    ]);
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GS_SHEET_ID,

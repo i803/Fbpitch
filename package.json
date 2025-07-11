@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^7.8.3",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.10.0",
     "cloudinary": "^2.7.0",
     "googleapis": "^150.0.1",
@@ -19,7 +20,8 @@
     "nodemailer": "^7.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "resend": "^4.6.0"
+    "resend": "^4.6.0",
+    "swiper": "^11.2.10"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

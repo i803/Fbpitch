@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 
 export default function ProductDetails({ params }) {
   const { id } = params;
@@ -62,7 +66,6 @@ export default function ProductDetails({ params }) {
     if (customName.trim()) extra += 1;
     if (quality === "Player Version") extra += 1;
     if (addShorts) extra += 2;
-
     return (Number(product.price) + extra).toFixed(3);
   };
 
@@ -90,6 +93,7 @@ export default function ProductDetails({ params }) {
       addShorts,
       price: Number(calculatePrice()),
       image: product.image,
+      longSleevesImage: product.longSleevesImage || null,
       shortsImage: product.shortsImage || null,
     };
 
@@ -108,117 +112,175 @@ export default function ProductDetails({ params }) {
   const availablePatches = Array.isArray(product.patches) ? product.patches : [];
 
   return (
-    <div className="max-w-xl mx-auto mt-10 px-4">
-      <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-      <img src={product.image} alt={product.name} className="w-full h-56 object-cover mb-6 rounded-md" />
-      {product.showLongSleeves && product.longSleevesImage && (
-        <img
-          src={product.longSleevesImage}
-          alt="Long Sleeves Version"
-          className="w-full h-56 object-cover mb-6 rounded-md border"
-        />
-      )}
-
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Size *</label>
-        <div className="flex gap-3 flex-wrap">
-          {sizes.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setSize(s)}
-              className={`px-4 py-2 rounded-full border font-semibold transition-colors ${
-                size === s
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+    <div className="max-w-6xl mx-auto mt-10 px-4 flex flex-col md:flex-row gap-10">
+      {/* Image Gallery */}
+      <div className="w-full md:w-1/2">
+        <Swiper
+          modules={[Pagination, Autoplay]}
+          spaceBetween={10}
+          slidesPerView={1}
+          pagination={{ clickable: true }}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
+          className="w-full h-[400px] sm:h-[500px] md:h-[600px] rounded-lg border !pb-8"
+        >
+          {product.image && (
+            <SwiperSlide>
+              <img
+                src={product.image}
+                alt="Short Sleeve"
+                className="w-full h-full object-contain rounded-md"
+              />
+            </SwiperSlide>
+          )}
+          {product.longSleevesImage && (
+            <SwiperSlide>
+              <img
+                src={product.longSleevesImage}
+                alt="Long Sleeve"
+                className="w-full h-full object-contain rounded-md"
+              />
+            </SwiperSlide>
+          )}
+          {product.shortsImage && (
+            <SwiperSlide>
+              <img
+                src={product.shortsImage}
+                alt="Shorts"
+                className="w-full h-full object-contain rounded-md"
+              />
+            </SwiperSlide>
+          )}
+        </Swiper>
       </div>
 
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Quality *</label>
-        <select className="border rounded-md w-full p-2" value={quality} onChange={(e) => setQuality(e.target.value)}>
-          <option value="">Select</option>
-          <option value="Fan Version">Fan Version</option>
-          <option value="Player Version">Player Version +1 KWD</option>
-        </select>
-      </div>
+      {/* Product Details */}
+      <div className="w-full md:w-1/2 space-y-6">
+        <h1 className="text-3xl font-bold">{product.name}</h1>
 
-      {product.showLongSleeves && (
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">Sleeve Length *</label>
-          <select className="border rounded-md w-full p-2" value={sleeve} onChange={(e) => setSleeve(e.target.value)}>
-            <option value="">Select</option>
-            <option value="Short Sleeve">Short Sleeve</option>
-            <option value="Long Sleeve">Long Sleeve +500 fils</option>
-          </select>
-        </div>
-      )}
-
-      {availablePatches.length > 0 && (
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">Patch (Optional)</label>
-          <select className="border rounded-md w-full p-2" value={patch} onChange={(e) => setPatch(e.target.value)}>
-            <option value="N/A">N/A</option>
-            {availablePatches.map((p, idx) => (
-              <option key={idx} value={p}>
-                {p} +500 fils
-              </option>
+        {/* Size */}
+        <div>
+          <label className="block mb-1 font-semibold">Size *</label>
+          <div className="flex gap-3 flex-wrap">
+            {sizes.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSize(s)}
+                className={`px-4 py-2 rounded-full border font-semibold transition-colors ${
+                  size === s
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
+                }`}
+              >
+                {s}
+              </button>
             ))}
+          </div>
+        </div>
+
+        {/* Quality */}
+        <div>
+          <label className="block mb-1 font-semibold">Quality *</label>
+          <select
+            value={quality}
+            onChange={(e) => setQuality(e.target.value)}
+            className="w-full border rounded-md p-2"
+          >
+            <option value="">Select</option>
+            <option value="Fan Version">Fan Version</option>
+            <option value="Player Version">Player Version +1 KWD</option>
           </select>
         </div>
-      )}
 
-      <div className="mb-4">
-        <label className="block mb-1 font-semibold">Custom Name & Number (Optional) +1KWD</label>
-        <input
-          type="text"
-          className="border rounded-md w-full p-2"
-          placeholder="Enter Name/Number"
-          value={customName}
-          onChange={(e) => setCustomName(e.target.value)}
-        />
-      </div>
+        {/* Sleeve */}
+        {product.showLongSleeves && (
+          <div>
+            <label className="block mb-1 font-semibold">Sleeve Length *</label>
+            <select
+              value={sleeve}
+              onChange={(e) => setSleeve(e.target.value)}
+              className="w-full border rounded-md p-2"
+            >
+              <option value="">Select</option>
+              <option value="Short Sleeve">Short Sleeve</option>
+              <option value="Long Sleeve">Long Sleeve +500 fils</option>
+            </select>
+          </div>
+        )}
 
-      {product.showShorts && (
-        <div className="mb-6 flex items-center gap-2">
+        {/* Patch */}
+        {availablePatches.length > 0 && (
+          <div>
+            <label className="block mb-1 font-semibold">Patch (Optional)</label>
+            <select
+              value={patch}
+              onChange={(e) => setPatch(e.target.value)}
+              className="w-full border rounded-md p-2"
+            >
+              <option value="N/A">N/A</option>
+              {availablePatches.map((p, idx) => (
+                <option key={idx} value={p}>
+                  {p} +500 fils
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Custom Name */}
+        <div>
+          <label className="block mb-1 font-semibold">Custom Name & Number (Optional) +1 KWD</label>
           <input
-            type="checkbox"
-            id="addShorts"
-            checked={addShorts}
-            onChange={(e) => setAddShorts(e.target.checked)}
-            className="rounded"
+            type="text"
+            placeholder="Enter Name/Number"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            className="w-full border rounded-md p-2"
           />
-          <label htmlFor="addShorts" className="font-semibold">
-            Add Matching Shorts +2 KWD
-          </label>
         </div>
-      )}
 
-      <div className="mb-6">
-        <label className="block mb-1 font-semibold">Instagram Handle *</label>
-        <input
-          type="text"
-          className="border rounded-md w-full p-2"
-          placeholder="@yourhandle"
-          value={instagram}
-          onChange={(e) => setInstagram(e.target.value)}
-        />
+        {/* Shorts */}
+        {product.showShorts && (
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="addShorts"
+              checked={addShorts}
+              onChange={(e) => setAddShorts(e.target.checked)}
+              className="rounded"
+            />
+            <label htmlFor="addShorts" className="font-semibold">
+              Add Matching Shorts +2 KWD
+            </label>
+          </div>
+        )}
+
+        {/* Instagram */}
+        <div>
+          <label className="block mb-1 font-semibold">Instagram Handle *</label>
+          <input
+            type="text"
+            placeholder="@yourhandle"
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+            className="w-full border rounded-md p-2"
+          />
+        </div>
+
+        {/* Price & Add to Cart */}
+        <div className="pt-4 border-t">
+          <p className="mb-3 text-lg font-semibold">KD {calculatePrice()}</p>
+          <button
+            onClick={addToCart}
+            disabled={addingToCart}
+            className={`w-full py-3 rounded-md font-semibold transition ${
+              addingToCart ? "bg-gray-600 cursor-not-allowed" : "bg-black text-white hover:bg-gray-800"
+            }`}
+          >
+            {addingToCart ? "Adding..." : "Add to Cart"}
+          </button>
+        </div>
       </div>
-
-      <button
-        onClick={addToCart}
-        disabled={addingToCart}
-        className={`w-full py-3 rounded-md font-semibold transition ${
-          addingToCart ? "bg-gray-600 cursor-not-allowed" : "bg-black text-white hover:bg-gray-800"
-        }`}
-      >
-        {addingToCart ? "Adding..." : `Add to Cart - KD ${calculatePrice()}`}
-      </button>
     </div>
   );
 }

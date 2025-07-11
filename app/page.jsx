@@ -79,24 +79,25 @@ export default function FootballKitStore() {
   }, []);
 
   useEffect(() => {
-    let filtered = products.filter((p) => !p.shortsImage);
+  let filtered = products.filter((p) => p.category !== "SHORTS");
 
-    if (selectedCategory !== "ALL") {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
+  if (selectedCategory !== "ALL") {
+    filtered = filtered.filter((p) => p.category === selectedCategory);
+  }
 
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  if (searchTerm.trim() !== "") {
+    filtered = filtered.filter((p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
 
-    setFilteredProducts(filtered);
+  setFilteredProducts(filtered);
 
-    const encodedCategory = encodeURIComponent(selectedCategory);
-    const url = selectedCategory === "ALL" ? "/" : `/?category=${encodedCategory}`;
-    router.replace(url);
-  }, [selectedCategory, searchTerm, products]);
+  const encodedCategory = encodeURIComponent(selectedCategory);
+  const url = selectedCategory === "ALL" ? "/" : `/?category=${encodedCategory}`;
+  router.replace(url);
+}, [selectedCategory, searchTerm, products]);
+
 
   useEffect(() => {
     if (darkMode) {
@@ -256,43 +257,61 @@ export default function FootballKitStore() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8">
+
           {loading ? (
-            <Spinner />
-          ) : filteredProducts.length > 0 ? (
+  Array.from({ length: 8 }).map((_, i) => (
+  <div
+    key={i}
+    className="border rounded-xl overflow-hidden animate-pulse bg-white dark:bg-gray-800 flex flex-col"
+  >
+    <div className="h-64 bg-gray-300 dark:bg-gray-700" />
+    <div className="p-4 flex flex-col flex-grow justify-between">
+      <div>
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-2" />
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-4" />
+      </div>
+      <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded" />
+    </div>
+  </div>
+))
+
+) : filteredProducts.length > 0 ? (
+
             filteredProducts.map((product) => (
               <div
-                key={product._id || product.id}
-                className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-                onClick={() => handleAddToCartClick(product)}
-                tabIndex={0}
-                role="button"
-                onKeyDown={(e) => e.key === "Enter" && handleAddToCartClick(product)}
-              >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-48 sm:h-56 object-cover"
-                  loading="lazy"
-                />
-                <div className="p-4">
-                  <h2 className="text-xl font-bold mb-2">{product.name}</h2>
-                  <p className="text-lg mb-4">
-                    KD {Number(product.price).toFixed(3)}
-                  </p>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToCartClick(product);
-                    }}
-                    className="w-full bg-black text-white py-2 hover:bg-gray-800"
-                  >
-                    Customize & Add to Cart
-                  </Button>
-                </div>
-              </div>
+  key={product._id || product.id}
+  className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer flex flex-col ${
+    darkMode ? "bg-gray-800" : "bg-white"
+  }`}
+  onClick={() => handleAddToCartClick(product)}
+>
+  {/* Product Image */}
+  <img
+    src={product.image}
+    alt={product.name}
+    className="w-full h-64 object-cover"
+  />
+
+  {/* Text content */}
+  <div className="p-4 flex flex-col justify-between flex-grow ">
+    <h2 className="text-sm sm:text-base font-semibold mb-2 line-clamp-3">{product.name}</h2>
+<p className="text-sm sm:text-lg mb-3">KD {Number(product.price).toFixed(3)}</p>
+
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        handleAddToCartClick(product);
+      }}
+      className="mt-auto bg-black text-white text-sm font-medium py-2 px-4 rounded hover:bg-gray-800 transition"
+    >
+      Add to Cart
+    </button>
+  </div>
+</div>
+
+
             ))
           ) : (
             <p>No products found.</p>

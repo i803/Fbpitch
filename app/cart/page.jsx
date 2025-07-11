@@ -6,6 +6,10 @@ import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { Button } from "../../components/ui/button";
 import Sidebar from "../../components/Sidebar";
 import Footer from "../../components/Footer";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import { Pagination, Autoplay } from "swiper/modules";
+import "swiper/css/pagination";
 
 function Spinner() {
   return (
@@ -237,17 +241,44 @@ const sendOrder = async (orderId, amount, method) => {
                     className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-300 dark:border-gray-700 pb-5 gap-4"
                   >
                     <div className="flex items-center gap-4">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-md border border-gray-300 dark:border-gray-700"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-700 text-gray-500">
-                          No Image
-                        </div>
-                      )}
+                      <Swiper
+  modules={[Pagination, Autoplay]}
+  spaceBetween={10}
+  slidesPerView={1}
+  pagination={{ clickable: true }}
+  autoplay={{ delay: 3000, disableOnInteraction: false }}
+  className="w-20 h-20 rounded-md border border-gray-300 dark:border-gray-700"
+>
+  {item.image && (
+    <SwiperSlide>
+      <img
+        src={item.image}
+        alt="Short Sleeve"
+        className="w-full h-full object-cover rounded-md"
+      />
+    </SwiperSlide>
+  )}
+  {item.longSleevesImage && (
+    <SwiperSlide>
+      <img
+        src={item.longSleevesImage}
+        alt="Long Sleeve"
+        className="w-full h-full object-cover rounded-md"
+      />
+    </SwiperSlide>
+  )}
+  {item.shortsImage && (
+    <SwiperSlide>
+      <img
+        src={item.shortsImage}
+        alt="Shorts"
+        className="w-full h-full object-cover rounded-md"
+      />
+    </SwiperSlide>
+  )}
+</Swiper>
+
+
                       <div>
                         <p className="font-semibold text-lg">{item.name}</p>
                         <p className="text-gray-500 dark:text-gray-400">

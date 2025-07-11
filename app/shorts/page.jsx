@@ -257,10 +257,29 @@ export default function ShortsPage() {
 
         </header>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8">
+
+
           {loading ? (
-            <Spinner />
-          ) : filteredShorts.length > 0 ? (
+  Array.from({ length: 8 }).map((_, i) => (
+  <div
+    key={i}
+    className="border rounded-xl overflow-hidden animate-pulse bg-white dark:bg-gray-800 flex flex-col"
+  >
+    <div className="h-56 bg-gray-300 dark:bg-gray-700 w-full" />
+    <div className="p-4 flex flex-col justify-between flex-grow">
+      <div>
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-2" />
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-4" />
+      </div>
+      <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded" />
+    </div>
+  </div>
+))
+
+
+) : filteredShorts.length > 0 ? (
+
             filteredShorts.map((product) => (
               <div
                 key={product._id || product.id}

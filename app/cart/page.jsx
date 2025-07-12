@@ -241,42 +241,55 @@ const sendOrder = async (orderId, amount, method) => {
                     className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-300 dark:border-gray-700 pb-5 gap-4"
                   >
                     <div className="flex items-center gap-4">
-                      <Swiper
-  modules={[Pagination, Autoplay]}
-  spaceBetween={10}
-  slidesPerView={1}
-  pagination={{ clickable: true }}
-  autoplay={{ delay: 3000, disableOnInteraction: false }}
-  className="w-20 h-20 rounded-md border border-gray-300 dark:border-gray-700"
->
-  {item.image && (
-    <SwiperSlide>
-      <img
-        src={item.image}
-        alt="Short Sleeve"
-        className="w-full h-full object-cover rounded-md"
-      />
-    </SwiperSlide>
-  )}
-  {item.longSleevesImage && (
-    <SwiperSlide>
-      <img
-        src={item.longSleevesImage}
-        alt="Long Sleeve"
-        className="w-full h-full object-cover rounded-md"
-      />
-    </SwiperSlide>
-  )}
-  {item.shortsImage && (
-    <SwiperSlide>
-      <img
-        src={item.shortsImage}
-        alt="Shorts"
-        className="w-full h-full object-cover rounded-md"
-      />
-    </SwiperSlide>
-  )}
-</Swiper>
+                      {item.quality === "Kids" ? (
+  // For Kids kits, show only the main image without swiper
+  item.image && (
+    <img
+      src={item.image}
+      alt="Kids Jersey"
+      className="w-20 h-20 object-cover rounded-md border border-gray-300 dark:border-gray-700"
+    />
+  )
+) : (
+  // For normal kits, show swiper carousel with all images
+  <Swiper
+    modules={[Pagination, Autoplay]}
+    spaceBetween={10}
+    slidesPerView={1}
+    pagination={{ clickable: true }}
+    autoplay={{ delay: 3000, disableOnInteraction: false }}
+    className="w-20 h-20 rounded-md border border-gray-300 dark:border-gray-700"
+  >
+    {item.image && (
+      <SwiperSlide>
+        <img
+          src={item.image}
+          alt="Short Sleeve"
+          className="w-full h-full object-cover rounded-md"
+        />
+      </SwiperSlide>
+    )}
+    {item.longSleevesImage && (
+      <SwiperSlide>
+        <img
+          src={item.longSleevesImage}
+          alt="Long Sleeve"
+          className="w-full h-full object-cover rounded-md"
+        />
+      </SwiperSlide>
+    )}
+    {item.shortsImage && (
+      <SwiperSlide>
+        <img
+          src={item.shortsImage}
+          alt="Shorts"
+          className="w-full h-full object-cover rounded-md"
+        />
+      </SwiperSlide>
+    )}
+  </Swiper>
+)}
+
 
 
                       <div>

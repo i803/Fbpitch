@@ -33,7 +33,7 @@ export default function AdminPage() {
   image: "",
   shortsImage: "",
   longSleevesImage: "", // ✅ ADD THIS
-  category: "NEW ARRIVALS",
+  categories: [],
   league: "",
   patches: [],
   showShorts: false,
@@ -135,8 +135,8 @@ export default function AdminPage() {
 
 
   async function handleAddOrUpdate() {
-    const { name, price, image, shortsImage, category, league, patches, showShorts, showLongSleeves } = newProduct;
-    if (!name || !price || !image || !category || !league) return alert("Please fill all required fields.");
+    const { name, price, image, shortsImage, categories, league, patches, showShorts, showLongSleeves } = newProduct;
+    if (!name || !price || !image || !categories.length || !league) return alert("Please fill all required fields.");
     setLoading(true);
 
     const body = {
@@ -145,7 +145,7 @@ export default function AdminPage() {
   image,
   shortsImage: typeof shortsImage === "string" ? shortsImage : "",
   longSleevesImage: typeof newProduct.longSleevesImage === "string" ? newProduct.longSleevesImage : "", // ✅ ADD THIS
-  category,
+  categories,
   league,
   patches: Array.isArray(patches) ? patches : [],
   showShorts: !!showShorts,
@@ -168,7 +168,7 @@ export default function AdminPage() {
         price: "",
         image: "",
         shortsImage: "",
-        category: "NEW ARRIVALS",
+        categories: [],
         league: "",
         patches: [],
         showShorts: false,
@@ -188,7 +188,7 @@ export default function AdminPage() {
       price: prod.price?.toString() || "",
       image: prod.image || "",
       shortsImage: prod.shortsImage || "",
-      category: prod.category || "NEW ARRIVALS",
+      categories: Array.isArray(prod.categories) ? prod.categories : [],
       league: prod.league || "",
       patches: Array.isArray(prod.patches) ? prod.patches : [],
       showShorts: !!prod.showShorts,
@@ -300,6 +300,7 @@ export default function AdminPage() {
   )}
 </div>
 
+
             <div className="flex flex-col">
               <label className="font-medium mb-1">
                 Shorts Image (optional)
@@ -321,13 +322,31 @@ export default function AdminPage() {
               )}
             </div>
 
-            <Select
-              label="Category"
-              options={["NEW ARRIVALS", "SPECIAL KITS", "RETRO", "NATIONAL TEAM", "KITS FOR KIDS"]}
-              value={newProduct.category}
-              onChange={(v) => setNewProduct((p) => ({ ...p, category: v }))}
-              required
-            />
+            {/* Multi-category checkboxes */}
+<div className="col-span-full">
+  <div className="font-medium mb-2">Categories</div>
+  <div className="flex flex-wrap gap-4">
+    {["NEW ARRIVALS", "SPECIAL KITS", "RETRO", "NATIONAL TEAM", "KITS FOR KIDS"].map((cat) => (
+      <label key={cat} className="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={newProduct.categories.includes(cat)}
+          onChange={() =>
+            setNewProduct((p) => ({
+              ...p,
+              categories: p.categories.includes(cat)
+                ? p.categories.filter((c) => c !== cat)
+                : [...p.categories, cat],
+            }))
+          }
+          className="cursor-pointer"
+        />
+        {cat}
+      </label>
+    ))}
+  </div>
+</div>
+
             <Select
               label="League"
               options={LEAGUES}
@@ -398,7 +417,7 @@ export default function AdminPage() {
                   price: "",
                   image: "",
                   shortsImage: "",
-                  category: "NEW ARRIVALS",
+                  categories: [],
                   league: "",
                   patches: [],
                   showShorts: false,
@@ -429,7 +448,10 @@ export default function AdminPage() {
               />
               <h3 className="text-lg font-semibold">{prod.name}</h3>
               <p className="text-indigo-600 font-bold">KD {prod.price.toFixed(3)}</p>
-              <p className="text-sm text-gray-600">{prod.category}</p>
+              <p className="text-sm text-gray-600">
+  {Array.isArray(prod.categories) ? prod.categories.join(", ") : prod.categories}
+</p>
+
               {prod.league && <p className="text-sm mt-1">League: {prod.league}</p>}
               {prod.showShorts && (
                 <p className="text-green-600 mt-1 font-semibold">✓ Shorts included</p>

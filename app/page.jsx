@@ -82,8 +82,11 @@ export default function FootballKitStore() {
   let filtered = products.filter((p) => p.category !== "SHORTS");
 
   if (selectedCategory !== "ALL") {
-    filtered = filtered.filter((p) => p.category === selectedCategory);
-  }
+  filtered = filtered.filter((p) =>
+    Array.isArray(p.categories) && p.categories.includes(selectedCategory)
+  );
+}
+
 
   if (searchTerm.trim() !== "") {
     filtered = filtered.filter((p) =>

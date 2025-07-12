@@ -15,7 +15,7 @@ export async function GET() {
       image: p.image,
       shortsImage: typeof p.shortsImage === "string" ? p.shortsImage : p.shortsImage?.secure_url || null,
       longSleevesImage: typeof p.longSleevesImage === "string" ? p.longSleevesImage : p.longSleevesImage?.secure_url || null, // ✅
-      category: p.category || "NEW ARRIVALS",
+      categories: Array.isArray(p.categories) ? p.categories : [p.categories || "NEW ARRIVALS"],
       league: p.league || null,
       patches: Array.isArray(p.patches) ? p.patches : [],
       showShorts: !!p.showShorts,
@@ -42,14 +42,14 @@ export async function POST(request) {
       image,
       shortsImage,
       longSleevesImage, // ✅
-      category,
+      categories,
       league,
       patches,
       showShorts,
       showLongSleeves,
     } = await request.json();
 
-    if (!name || !price || !image || !category || !league) {
+    if (!name || !price || !image || !Array.isArray(categories) || categories.length === 0 || !league) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
@@ -62,7 +62,7 @@ export async function POST(request) {
       image,
       shortsImage: typeof shortsImage === "string" ? shortsImage : shortsImage?.secure_url || null,
       longSleevesImage: typeof longSleevesImage === "string" ? longSleevesImage : longSleevesImage?.secure_url || null, // ✅
-      category,
+      categories,
       league,
       patches: Array.isArray(patches) ? patches : [],
       showShorts: !!showShorts,
@@ -90,14 +90,14 @@ export async function PUT(request) {
       image,
       shortsImage,
       longSleevesImage, // ✅
-      category,
+      categories,
       league,
       patches,
       showShorts,
       showLongSleeves,
     } = await request.json();
 
-    if (!id || !name || !price || !image || !category || !league) {
+    if (!id || !name || !price || !image || !Array.isArray(categories) || categories.length === 0 || !league) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
@@ -110,7 +110,7 @@ export async function PUT(request) {
       image,
       shortsImage: typeof shortsImage === "string" ? shortsImage : shortsImage?.secure_url || null,
       longSleevesImage: typeof longSleevesImage === "string" ? longSleevesImage : longSleevesImage?.secure_url || null, // ✅
-      category,
+      categories,
       league,
       patches: Array.isArray(patches) ? patches : [],
       showShorts: !!showShorts,

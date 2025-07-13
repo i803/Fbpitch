@@ -17,14 +17,6 @@ import {
   Instagram,
 } from "lucide-react";
 
-function Spinner() {
-  return (
-    <div className="fixed inset-0 flex justify-center items-center bg-transparent z-50">
-      <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  );
-}
-
 export default function ShortsPage() {
   const [cart, setCart] = useState([]);
   const [shorts, setShorts] = useState([]);
@@ -41,7 +33,7 @@ export default function ShortsPage() {
     "SPECIAL KITS",
     "NATIONAL TEAM",
     "KITS FOR KIDS",
-    "SHORTS", // new category for shorts page
+    "SHORTS",
   ];
 
   const [selectedCategory, setSelectedCategory] = useState("SHORTS");
@@ -69,8 +61,6 @@ export default function ShortsPage() {
     if (loggedInUser) {
       const storedCart = JSON.parse(localStorage.getItem(`cart-${loggedInUser}`) || "[]");
       setCart(storedCart);
-    } else {
-      setCart([]);
     }
 
     const savedDarkMode = localStorage.getItem("darkMode");
@@ -84,30 +74,20 @@ export default function ShortsPage() {
   }, []);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("darkMode", "true");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("darkMode", "false");
-    }
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.setItem("darkMode", darkMode.toString());
   }, [darkMode]);
 
   useEffect(() => {
-    let filtered = shorts.filter((p) =>
+    const filtered = shorts.filter((p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredShorts(filtered);
   }, [searchTerm, shorts]);
 
   const handleCategoryClick = (cat) => {
-    if (cat === selectedCategory) return;
-
     setSelectedCategory(cat);
-
-    if (cat === "SHORTS") {
-      // Stay on shorts page
-    } else {
+    if (cat !== "SHORTS") {
       router.replace(`/?category=${encodeURIComponent(cat)}`);
     }
   };
@@ -142,35 +122,22 @@ export default function ShortsPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen flex ${
-        darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      } font-sans`}
-    >
-      {/* Sidebar visible only on small screens */}
+    <div className={`min-h-screen flex ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"} font-sans`}>
       <div className="md:hidden">
         <Sidebar />
       </div>
 
-      {/* Main content area fills full width on md+ */}
       <div className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10">
         <header className="mb-6 px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <Link
-              href="/"
-              className="flex items-center gap-3 justify-center md:justify-start"
-            >
-              <img
-                src="/fbpitch-logo.png"
-                alt="Fbpitch Logo"
-                className="h-10 sm:h-12 w-10 sm:w-12 object-contain"
-              />
+            <Link href="/" className="flex items-center gap-3 justify-center md:justify-start">
+              <img src="/fbpitch-logo.png" alt="Fbpitch Logo" className="h-10 sm:h-12 w-10 sm:w-12 object-contain" />
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wide uppercase text-indigo-600 font-poppins">
                 Fbpitch
               </h1>
             </Link>
 
-            <div className="relative w-full md:w-auto md:mx-0 md:flex-none">
+            <div className="relative w-full md:flex-1 md:mx-6">
               <input
                 type="text"
                 placeholder="Search shorts..."
@@ -182,37 +149,22 @@ export default function ShortsPage() {
             </div>
 
             <div className="flex justify-end gap-4">
-              <a
-                href="https://www.instagram.com/fbpitch/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="outline"
-                  className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
+              <a href="https://www.instagram.com/fbpitch/" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">
                   <Instagram size={20} />
                 </Button>
               </a>
 
-              <Button
-                variant="outline"
-                onClick={() => setDarkMode(!darkMode)}
-                className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
+              <Button variant="outline" onClick={() => setDarkMode(!darkMode)} className="p-2 border dark:border-gray-600">
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </Button>
 
-              <Button
-                variant="outline"
-                onClick={handleAdminAccess}
-                className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
+              <Button variant="outline" onClick={handleAdminAccess} className="p-2 border dark:border-gray-600">
                 <Settings size={20} />
               </Button>
 
               <Link href="/cart">
-                <Button className="flex items-center gap-2 p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Button className="flex items-center gap-2 p-2 border dark:border-gray-600">
                   <ShoppingCart size={20} />
                   <span className="font-semibold text-sm">{cart.length}</span>
                 </Button>
@@ -220,101 +172,75 @@ export default function ShortsPage() {
             </div>
           </div>
 
-          {/* Categories below search bar */}
-<section className="mt-4 mb-4 overflow-x-auto w-full md:flex-1 md:mx-6">
-  <div className="flex flex-nowrap gap-3 whitespace-nowrap pb-1">
-    {categories.map((cat) => (
-      <button
-        key={cat}
-        className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
-          selectedCategory === cat
-            ? "bg-indigo-600 text-white border-indigo-600"
-            : darkMode
-            ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-            : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-        }`}
-        onClick={() => handleCategoryClick(cat)}
-        aria-pressed={selectedCategory === cat}
-      >
-        {cat}
-      </button>
-    ))}
-
-    {/* Removed this duplicate shorts Link button */}
-    {/* <Link href="/shorts">
-      <button
-        className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
-          darkMode
-            ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-            : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-        }`}
-      >
-        SHORTS
-      </button>
-    </Link> */}
-  </div>
-</section>
-
+          <section className="mt-4 mb-4 overflow-x-auto w-full md:mx-6">
+            <div className="flex flex-nowrap gap-3 whitespace-nowrap pb-1">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
+                    selectedCategory === cat
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : darkMode
+                      ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
+                  }`}
+                  onClick={() => handleCategoryClick(cat)}
+                  aria-pressed={selectedCategory === cat}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </section>
         </header>
 
-        <section className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8">
-
-
-          {loading ? (
-  Array.from({ length: 8 }).map((_, i) => (
-  <div
-    key={i}
-    className="border rounded-xl overflow-hidden animate-pulse bg-white dark:bg-gray-800 flex flex-col"
-  >
-    <div className="h-56 bg-gray-300 dark:bg-gray-700 w-full" />
-    <div className="p-4 flex flex-col justify-between flex-grow">
-      <div>
-        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-2" />
-        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-4" />
-      </div>
-      <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-    </div>
-  </div>
-))
-
-
-) : filteredShorts.length > 0 ? (
-
-            filteredShorts.map((product) => (
-              <div
-                key={product._id || product.id}
-                className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-                onClick={() => handleAddToCartClick(product)}
-                tabIndex={0}
-                role="button"
-                onKeyDown={(e) => e.key === "Enter" && handleAddToCartClick(product)}
-              >
-                <img
-                  src={product.shortsImage}
-                  alt={`${product.name} Shorts`}
-                  className="w-full h-48 sm:h-56 object-cover"
-                  loading="lazy"
-                />
-                <div className="p-4">
-                  <h2 className="text-xl font-bold mb-2">{product.name} Shorts</h2>
-                  <p className="text-lg mb-4">KD {Number(product.price).toFixed(3)}</p>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToCartClick(product);
-                    }}
-                    className="w-full bg-black text-white py-2 hover:bg-gray-800"
-                  >
-                    Customize & Add to Cart
-                  </Button>
+        <section className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8">
+          {loading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="border rounded-xl overflow-hidden animate-pulse bg-white dark:bg-gray-800 flex flex-col"
+                >
+                  <div className="h-64 bg-gray-300 dark:bg-gray-700" />
+                  <div className="p-4 flex flex-col flex-grow justify-between">
+                    <div>
+                      <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-2" />
+                      <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-4" />
+                    </div>
+                    <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded" />
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <p>No shorts found.</p>
-          )}
+              ))
+            : filteredShorts.length > 0
+            ? filteredShorts.map((product) => (
+                <div
+                  key={product._id || product.id}
+                  className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer flex flex-col ${
+                    darkMode ? "bg-gray-800" : "bg-white"
+                  }`}
+                  onClick={() => handleAddToCartClick(product)}
+                >
+                  <img
+                    src={product.shortsImage}
+                    alt={product.name}
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="p-4 flex flex-col justify-between flex-grow">
+                    <h2 className="text-sm sm:text-base font-semibold mb-2 line-clamp-3">{product.name} Shorts</h2>
+                    <p className="text-sm sm:text-lg mb-3">KD {Number(product.price).toFixed(3)}</p>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCartClick(product);
+                      }}
+                      className="mt-auto bg-black text-white text-sm font-medium py-2 px-4 rounded hover:bg-gray-800 transition"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))
+            : <p>No shorts found.</p>}
         </section>
 
         <footer className="mt-16 text-center text-sm">

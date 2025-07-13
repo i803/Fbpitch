@@ -101,7 +101,7 @@ export default function ProductDetails({ params }) {
   };
 
   // Fixed price for kids kits
-  const kidsPrice = 8.5;
+  const kidsPrice = product?.price ? Number(product.price) : 8.5;
 
   // Add to cart for adults
   const addToCart = () => {
@@ -154,7 +154,7 @@ export default function ProductDetails({ params }) {
 
     setAddingToCart(true);
 
-    const basePrice = kidsPrice;
+    const basePrice = product?.price ? Number(product.price) : 8.5;
     const extraForCustomName = customName.trim() ? 1 : 0;
 
     const newItem = {
@@ -278,8 +278,8 @@ export default function ProductDetails({ params }) {
             {/* Fixed Price & Add to Cart */}
             <div className="pt-4 border-t">
               <p className="mb-3 text-lg font-semibold">
-                KD {(kidsPrice + (customName.trim() ? 1 : 0)).toFixed(3)}
-              </p>
+  KD {(kidsPrice + (customName.trim() ? 1 : 0)).toFixed(3)}
+</p>
               <button
                 onClick={addToCartKids}
                 disabled={addingToCart}

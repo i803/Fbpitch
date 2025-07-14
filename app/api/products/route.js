@@ -13,13 +13,22 @@ export async function GET() {
       name: p.name,
       price: p.price,
       image: p.image,
-      shortsImage: typeof p.shortsImage === "string" ? p.shortsImage : p.shortsImage?.secure_url || null,
-      longSleevesImage: typeof p.longSleevesImage === "string" ? p.longSleevesImage : p.longSleevesImage?.secure_url || null, // ✅
-      categories: Array.isArray(p.categories) ? p.categories : [p.categories || "NEW ARRIVALS"],
+      shortsImage:
+        typeof p.shortsImage === "string"
+          ? p.shortsImage
+          : p.shortsImage?.secure_url || null,
+      longSleevesImage:
+        typeof p.longSleevesImage === "string"
+          ? p.longSleevesImage
+          : p.longSleevesImage?.secure_url || null,
+      categories: Array.isArray(p.categories)
+        ? p.categories
+        : [p.categories || "NEW ARRIVALS"],
       league: p.league || null,
       patches: Array.isArray(p.patches) ? p.patches : [],
       showShorts: !!p.showShorts,
       showLongSleeves: !!p.showLongSleeves,
+      tags: Array.isArray(p.tags) ? p.tags : [],
     }));
 
     return NextResponse.json({ products: formatted });
@@ -41,15 +50,23 @@ export async function POST(request) {
       price,
       image,
       shortsImage,
-      longSleevesImage, // ✅
+      longSleevesImage,
       categories,
       league,
       patches,
       showShorts,
       showLongSleeves,
+      tags,
     } = await request.json();
 
-    if (!name || !price || !image || !Array.isArray(categories) || categories.length === 0 || !league) {
+    if (
+      !name ||
+      !price ||
+      !image ||
+      !Array.isArray(categories) ||
+      categories.length === 0 ||
+      !league
+    ) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
@@ -60,13 +77,20 @@ export async function POST(request) {
       name,
       price,
       image,
-      shortsImage: typeof shortsImage === "string" ? shortsImage : shortsImage?.secure_url || null,
-      longSleevesImage: typeof longSleevesImage === "string" ? longSleevesImage : longSleevesImage?.secure_url || null, // ✅
+      shortsImage:
+        typeof shortsImage === "string"
+          ? shortsImage
+          : shortsImage?.secure_url || null,
+      longSleevesImage:
+        typeof longSleevesImage === "string"
+          ? longSleevesImage
+          : longSleevesImage?.secure_url || null,
       categories,
       league,
       patches: Array.isArray(patches) ? patches : [],
       showShorts: !!showShorts,
       showLongSleeves: !!showLongSleeves,
+      tags: Array.isArray(tags) ? tags : [],
     });
 
     return NextResponse.json({ success: true });
@@ -89,15 +113,24 @@ export async function PUT(request) {
       price,
       image,
       shortsImage,
-      longSleevesImage, // ✅
+      longSleevesImage,
       categories,
       league,
       patches,
       showShorts,
       showLongSleeves,
+      tags,
     } = await request.json();
 
-    if (!id || !name || !price || !image || !Array.isArray(categories) || categories.length === 0 || !league) {
+    if (
+      !id ||
+      !name ||
+      !price ||
+      !image ||
+      !Array.isArray(categories) ||
+      categories.length === 0 ||
+      !league
+    ) {
       return NextResponse.json(
         { success: false, message: "Missing fields" },
         { status: 400 }
@@ -108,13 +141,20 @@ export async function PUT(request) {
       name,
       price,
       image,
-      shortsImage: typeof shortsImage === "string" ? shortsImage : shortsImage?.secure_url || null,
-      longSleevesImage: typeof longSleevesImage === "string" ? longSleevesImage : longSleevesImage?.secure_url || null, // ✅
+      shortsImage:
+        typeof shortsImage === "string"
+          ? shortsImage
+          : shortsImage?.secure_url || null,
+      longSleevesImage:
+        typeof longSleevesImage === "string"
+          ? longSleevesImage
+          : longSleevesImage?.secure_url || null,
       categories,
       league,
       patches: Array.isArray(patches) ? patches : [],
       showShorts: !!showShorts,
       showLongSleeves: !!showLongSleeves,
+      tags: Array.isArray(tags) ? tags : [],
     });
 
     return NextResponse.json({ success: true });

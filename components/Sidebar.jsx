@@ -31,7 +31,10 @@ export default function Sidebar() {
     };
 
     const observer = new MutationObserver(syncDarkMode);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     window.addEventListener("focus", handleFocus);
 
@@ -74,24 +77,26 @@ export default function Sidebar() {
   return (
     <div>
       <button
-        aria-label={open ? "Close menu" : "Open menu"}
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-        className={`p-3 fixed top-4 left-4 z-50 rounded-full shadow-md transition ${
-          darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-white text-black hover:bg-gray-200"
-        }`}
-      >
-        {open ? <X size={24} /> : <Menu size={24} />}
-      </button>
+  aria-label={open ? "Close menu" : "Open menu"}
+  aria-expanded={open}
+  onClick={() => setOpen(!open)}
+  className={`p-3 fixed top-4 left-4 z-50 rounded-full transition 
+    ${darkMode ? "text-white hover:bg-white/10" : "text-black hover:bg-black/10"}`}
+>
+  {open ? <X size={24} /> : <Menu size={24} />}
+</button>
+
 
       <aside
-        className={`fixed top-0 left-0 h-full w-64 shadow-xl z-40 flex flex-col p-6 gap-6 transition-transform duration-300 ${
-          open ? "translate-x-0" : "-translate-x-full"
-        } ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}`}
+        className={`fixed top-0 left-0 h-full w-64 shadow-xl flex flex-col p-6 gap-6 transition-transform duration-300
+          ${open ? "z-40 translate-x-0" : "-translate-x-full z-0"}
+          ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}`}
         role="navigation"
         aria-label="Sidebar navigation"
       >
-        <h2 className="text-3xl font-bold mb-8 select-none tracking-wide ml-11">Fbpitch</h2>
+        <h2 className="text-3xl font-bold mb-8 select-none tracking-wide ml-11">
+          Fbpitch
+        </h2>
 
         <nav className="flex flex-col gap-4 text-lg flex-grow">
           {[
@@ -106,8 +111,8 @@ export default function Sidebar() {
               key={href}
               href={href}
               onClick={() => setOpen(false)}
-              className={`hover:text-blue-600 transition ${
-                isActive(href) ? "font-bold text-blue-600" : darkMode ? "text-white" : "text-black"
+              className={`hover:text-blue-500 transition ${
+                isActive(href) ? "font-bold text-blue-500" : ""
               }`}
             >
               {label}
@@ -119,8 +124,8 @@ export default function Sidebar() {
               <Link
                 href="/signup"
                 onClick={() => setOpen(false)}
-                className={`hover:text-blue-600 transition ${
-                  isActive("/signup") ? "font-bold text-blue-600" : darkMode ? "text-white" : "text-black"
+                className={`hover:text-blue-500 transition ${
+                  isActive("/signup") ? "font-bold text-blue-500" : ""
                 }`}
               >
                 Sign Up
@@ -128,8 +133,8 @@ export default function Sidebar() {
               <Link
                 href="/login"
                 onClick={() => setOpen(false)}
-                className={`hover:text-blue-600 transition ${
-                  isActive("/login") ? "font-bold text-blue-600" : darkMode ? "text-white" : "text-black"
+                className={`hover:text-blue-500 transition ${
+                  isActive("/login") ? "font-bold text-blue-500" : ""
                 }`}
               >
                 Login

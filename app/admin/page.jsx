@@ -5,24 +5,32 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
 import { Button } from "../../components/ui/button";
-import { BarChart2, Mail, Edit2, Trash2 } from "lucide-react";
+import { BarChart2, Mail, Edit2, Search as SearchIcon } from "lucide-react";
 
 const LEAGUES = [
-  "Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1",
-  "Champions League", "Europa League", "Saudi Pro League", "AFC Champions League", "International",
+  "Premier League",
+  "La Liga",
+  "Serie A",
+  "Bundesliga",
+  "Ligue 1",
+  "Champions League",
+  "Europa League",
+  "Saudi Pro League",
+  "AFC Champions League",
+  "International",
 ];
 
 const PATCHES = {
   "Premier League": ["Champions League", "FA Cup", "Community Shield"],
   "La Liga": ["Champions League", "Copa del Rey"],
   "Serie A": ["Champions League", "Coppa Italia"],
-  "Bundesliga": ["Champions League", "DFB Pokal"],
+  Bundesliga: ["Champions League", "DFB Pokal"],
   "Ligue 1": ["Champions League", "Coupe de France"],
   "Champions League": ["UEFA Starball"],
   "Europa League": ["Europa Patch"],
   "Saudi Pro League": ["AFC Champions League"],
   "AFC Champions League": ["ACL Patch"],
-  "International": ["World Cup", "EURO", "AFCON"],
+  International: ["World Cup", "EURO", "AFCON"],
 };
 
 const AVAILABLE_TAGS = [
@@ -58,6 +66,7 @@ export default function AdminPage() {
   const [uploadingShortsImage, setUploadingShortsImage] = useState(false);
   const [uploadingLongSleevesImage, setUploadingLongSleevesImage] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const router = useRouter();
 
@@ -203,6 +212,7 @@ export default function AdminPage() {
       });
       setEditId(null);
       fetchProducts();
+      setSearchTerm(""); // clear search on update to see all
     } else {
       alert("Error saving product.");
     }
@@ -223,6 +233,7 @@ export default function AdminPage() {
       tags: Array.isArray(prod.tags) ? prod.tags : [],
     });
     setEditId(prod._id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // ====== TAGS input handlers with dropdown =======
@@ -246,33 +257,40 @@ export default function AdminPage() {
     }));
   }
 
+  // Filter products by search term (case-insensitive)
+  const filteredProducts = products.filter((prod) =>
+    prod.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen flex bg-gray-50 text-gray-900">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50 text-gray-900">
       <Sidebar />
-      <main className="flex-grow p-8 max-w-7xl mx-auto space-y-12">
-        <header className="flex justify-between items-center mb-8">
+      <main className="flex-grow p-6 md:p-8 max-w-7xl mx-auto space-y-10 w-full">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 md:gap-0">
           <Link href="/" className="flex items-center gap-3 text-indigo-600 hover:opacity-80">
-            <img src="/fbpitch-logo.png" alt="Logo" className="h-12 w-12" />
-            <h1 className="text-4xl font-extrabold uppercase">Fbpitch Admin</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold uppercase truncate max-w-full">
+              Fbpitch Admin
+            </h1>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap gap-3 justify-end">
             <Button
               variant="secondary"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 whitespace-nowrap"
               onClick={() => router.push("/admin/analytics")}
             >
               <BarChart2 size={16} />
               Analytics
             </Button>
             <Button
-              className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2 whitespace-nowrap"
               onClick={() => router.push("/admin/contact-messages")}
             >
               <Mail size={16} />
               Messages
             </Button>
             <Button
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 whitespace-nowrap"
               onClick={() => {
                 localStorage.removeItem("adminToken");
                 router.push("/admin/login");
@@ -284,9 +302,11 @@ export default function AdminPage() {
         </header>
 
         {/* Add/Edit Product Form */}
-        <section className="bg-white p-8 rounded-xl shadow-md max-w-4xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-6">{editId ? "Edit Product" : "Add New Product"}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="bg-white p-6 md:p-8 rounded-xl shadow-md max-w-4xl mx-auto">
+          <h2 className="text-xl md:text-2xl font-semibold mb-6 text-center md:text-left">
+            {editId ? "Edit Product" : "Add New Product"}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Input
               label="Name"
               value={newProduct.name}
@@ -320,7 +340,7 @@ export default function AdminPage() {
                 <img
                   src={newProduct.image}
                   alt="Jersey Image"
-                  className="mt-2 h-32 w-32 object-contain rounded border border-gray-300"
+                  className="mt-2 h-32 w-32 object-contain rounded border border-gray-300 mx-auto sm:mx-0"
                 />
               )}
             </div>
@@ -335,12 +355,14 @@ export default function AdminPage() {
                 disabled={uploadingLongSleevesImage}
                 className="border border-gray-300 rounded-md p-2 cursor-pointer"
               />
-              {uploadingLongSleevesImage && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+              {uploadingLongSleevesImage && (
+                <p className="text-sm text-gray-500 mt-1">Uploading...</p>
+              )}
               {newProduct.longSleevesImage && !uploadingLongSleevesImage && (
                 <img
                   src={newProduct.longSleevesImage}
                   alt="Long Sleeves"
-                  className="mt-2 h-32 w-32 object-contain rounded border border-gray-300"
+                  className="mt-2 h-32 w-32 object-contain rounded border border-gray-300 mx-auto sm:mx-0"
                 />
               )}
             </div>
@@ -355,12 +377,14 @@ export default function AdminPage() {
                 disabled={uploadingShortsImage}
                 className="border border-gray-300 rounded-md p-2 cursor-pointer"
               />
-              {uploadingShortsImage && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+              {uploadingShortsImage && (
+                <p className="text-sm text-gray-500 mt-1">Uploading...</p>
+              )}
               {newProduct.shortsImage && !uploadingShortsImage && (
                 <img
                   src={newProduct.shortsImage}
                   alt="Shorts Image"
-                  className="mt-2 h-32 w-32 object-contain rounded border border-gray-300"
+                  className="mt-2 h-32 w-32 object-contain rounded border border-gray-300 mx-auto sm:mx-0"
                 />
               )}
             </div>
@@ -369,8 +393,17 @@ export default function AdminPage() {
             <div className="col-span-full">
               <div className="font-medium mb-2">Categories</div>
               <div className="flex flex-wrap gap-4">
-                {["NEW ARRIVALS", "SPECIAL KITS", "RETRO", "NATIONAL TEAM", "KITS FOR KIDS"].map((cat) => (
-                  <label key={cat} className="flex items-center gap-2 cursor-pointer select-none">
+                {[
+                  "NEW ARRIVALS",
+                  "SPECIAL KITS",
+                  "RETRO",
+                  "NATIONAL TEAM",
+                  "KITS FOR KIDS",
+                ].map((cat) => (
+                  <label
+                    key={cat}
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                  >
                     <input
                       type="checkbox"
                       checked={newProduct.categories.includes(cat)}
@@ -437,7 +470,7 @@ export default function AdminPage() {
                 {newProduct.tags.map((tag) => (
                   <div
                     key={tag}
-                    className="bg-indigo-600 text-white px-3 py-1 rounded-full flex items-center gap-1"
+                    className="bg-indigo-600 text-white px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap"
                   >
                     {tag}
                     <button
@@ -486,16 +519,19 @@ export default function AdminPage() {
               <input
                 type="checkbox"
                 checked={newProduct.showLongSleeves}
-                onChange={(e) => setNewProduct((p) => ({ ...p, showLongSleeves: e.target.checked }))}
+                onChange={(e) =>
+                  setNewProduct((p) => ({ ...p, showLongSleeves: e.target.checked }))
+                }
                 className="cursor-pointer"
               />
               Show Long Sleeves?
             </label>
           </div>
 
-          <div className="mt-8 flex justify-end gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row justify-end gap-4">
             <Button
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={() => {
                 setNewProduct({
                   name: "",
@@ -516,6 +552,7 @@ export default function AdminPage() {
               Cancel
             </Button>
             <Button
+              className="w-full sm:w-auto"
               onClick={handleAddOrUpdate}
               disabled={loading || uploadingImage || uploadingShortsImage || uploadingLongSleevesImage}
             >
@@ -524,41 +561,72 @@ export default function AdminPage() {
           </div>
         </section>
 
-        {/* Products Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((prod) => (
-            <div
-              key={prod._id}
-              className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col"
-            >
-              <img
-                src={prod.image}
-                alt={prod.name}
-                className="h-44 w-full object-cover rounded-lg mb-4"
-              />
-              <h3 className="text-lg font-semibold">{prod.name}</h3>
-              <p className="text-gray-700">KWD {prod.price.toFixed(3)}</p>
-              <p className="text-sm text-gray-500 mt-2">League: {prod.league || "N/A"}</p>
-              <p className="text-sm text-gray-500">
-                Categories: {Array.isArray(prod.categories) ? prod.categories.join(", ") : ""}
-              </p>
-              <p className="text-sm text-gray-500">
-                Tags: {Array.isArray(prod.tags) && prod.tags.length ? prod.tags.join(", ") : "None"}
-              </p>
+        {/* Search bar above products grid */}
+        <section className="max-w-4xl mx-auto">
+          <label htmlFor="search" className="sr-only">
+            Search Jerseys
+          </label>
+          <div className="relative w-full max-w-md mx-auto mb-6">
+            <input
+              id="search"
+              type="search"
+              placeholder="Search jerseys by name..."
+              className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <SearchIcon
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            />
+          </div>
+        </section>
 
-              <div className="mt-auto flex gap-2 pt-4 border-t border-gray-200">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={() => startEdit(prod)}
-                >
-                  <Edit2 size={14} /> Edit
-                </Button>
-                {/* Add Delete button and other controls if needed */}
+        {/* Products Grid */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((prod) => (
+              <div
+                key={prod._id}
+                className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col"
+              >
+                <img
+                  src={prod.image}
+                  alt={prod.name}
+                  className="h-44 w-full object-cover rounded-lg mb-4"
+                />
+                <h3 className="text-lg font-semibold truncate">{prod.name}</h3>
+                <p className="text-gray-700">KWD {prod.price.toFixed(3)}</p>
+                <p className="text-sm text-gray-500 mt-2 truncate">League: {prod.league || "N/A"}</p>
+                <p className="text-sm text-gray-500 truncate">
+                  Categories:{" "}
+                  {Array.isArray(prod.categories) ? prod.categories.join(", ") : ""}
+                </p>
+                <p className="text-sm text-gray-500 truncate">
+                  Tags:{" "}
+                  {Array.isArray(prod.tags) && prod.tags.length ? prod.tags.join(", ") : "None"}
+                </p>
+
+                <div className="mt-auto flex gap-2 pt-4 border-t border-gray-200 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1 whitespace-nowrap"
+                    onClick={() => startEdit(prod)}
+                  >
+                    <Edit2 size={14} /> Edit
+                  </Button>
+                  {/* Add Delete button and other controls if needed */}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-center text-gray-600 col-span-full">
+              No jerseys found matching &quot;{searchTerm}&quot;.
+            </p>
+          )}
         </section>
       </main>
     </div>
@@ -567,7 +635,7 @@ export default function AdminPage() {
 
 function Input({ label, value, onChange, type = "text", required = false, ...props }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex flex-col gap-1 w-full">
       <span className="font-medium">
         {label} {required && <span className="text-red-600">*</span>}
       </span>
@@ -575,7 +643,7 @@ function Input({ label, value, onChange, type = "text", required = false, ...pro
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+        className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         required={required}
         {...props}
       />
@@ -585,12 +653,12 @@ function Input({ label, value, onChange, type = "text", required = false, ...pro
 
 function Select({ label, options, value, onChange, required = false }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex flex-col gap-1 w-full">
       <span className="font-medium">
         {label} {required && <span className="text-red-600">*</span>}
       </span>
       <select
-        className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+        className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}

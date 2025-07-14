@@ -4,17 +4,11 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
-import { Button } from "../../components/ui/button";
 import {
-  Settings,
-  ShoppingCart,
   Shirt,
   Globe,
   Clock,
-  Moon,
-  Sun,
   Search,
-  Instagram,
 } from "lucide-react";
 
 export default function ShortsPage() {
@@ -96,86 +90,38 @@ export default function ShortsPage() {
     router.push(`/product/${product._id || product.id}`);
   };
 
-  const handleAdminAccess = async () => {
-    const username = prompt("Enter Admin Username:");
-    const password = prompt("Enter Admin Password:");
-    if (!username || !password) return alert("Username and Password are required");
-
-    try {
-      const res = await fetch("/api/admin-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem("adminToken", data.token);
-        window.location.href = "/admin";
-      } else {
-        alert("Access Denied");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error verifying credentials");
-    }
-  };
-
   return (
     <div className={`min-h-screen flex ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"} font-sans`}>
       <div className="md:hidden">
         <Sidebar />
       </div>
 
-      <div className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10">
-        <header className="mb-6 px-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex-grow w-full max-w-7xl mx-auto relative z-10 p-4 sm:p-6 md:p-8">
+        {/* Sticky header */}
+        <header className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 mb-6 px-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-3">
             <Link href="/" className="flex items-center gap-3 justify-center md:justify-start">
-  <img
-    src="/Fbpitch-shorts.png"
-    alt="Fbpitch Logo"
-    className="h-12 w-auto object-contain" // changed from h-20 to h-12
-  />
-</Link>
-
+              <img
+                src="/Fbpitch-logo.png"
+                alt="Fbpitch Logo"
+                className="h-12 w-auto object-contain"
+              />
+            </Link>
 
             <div className="relative w-full md:flex-1 md:-ml-2 md:mr-4">
-  <input
-    type="text"
-    placeholder="Search shorts..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="pl-10 pr-4 py-2 rounded-full w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
-  />
-  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
-</div>
-
-            <div className="flex justify-end gap-4">
-              <a href="https://www.instagram.com/fbpitch/" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="p-2 border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">
-                  <Instagram size={20} />
-                </Button>
-              </a>
-
-              <Button variant="outline" onClick={() => setDarkMode(!darkMode)} className="p-2 border dark:border-gray-600">
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </Button>
-
-              <Button variant="outline" onClick={handleAdminAccess} className="p-2 border dark:border-gray-600">
-                <Settings size={20} />
-              </Button>
-
-              <Link href="/cart">
-                <Button className="flex items-center gap-2 p-2 border dark:border-gray-600">
-                  <ShoppingCart size={20} />
-                  <span className="font-semibold text-sm">{cart.length}</span>
-                </Button>
-              </Link>
+              <input
+                type="text"
+                placeholder="Search shorts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 rounded-full w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
             </div>
           </div>
 
-          <section className="mt-4 mb-4 overflow-x-auto w-full md:mx-6">
-            <div className="flex flex-nowrap gap-3 whitespace-nowrap pb-1">
+          <section className="overflow-x-auto w-full md:mx-6 pb-3">
+            <div className="flex flex-nowrap gap-3 whitespace-nowrap">
               {categories.map((cat) => (
                 <button
                   key={cat}
@@ -224,12 +170,16 @@ export default function ShortsPage() {
                 >
                   <img
                     src={product.shortsImage}
-                    alt={product.name}
+                    alt={`${product.name} Shorts`}
                     className="w-full h-64 object-cover"
                   />
                   <div className="p-4 flex flex-col justify-between flex-grow">
-                    <h2 className="text-sm sm:text-base font-semibold mb-2 line-clamp-3">{product.name} Shorts</h2>
-                    <p className="text-sm sm:text-lg mb-3">KD {Number(product.price).toFixed(3)}</p>
+                    <h2 className="text-sm sm:text-base font-semibold mb-2 line-clamp-3">
+                      {product.name} Shorts
+                    </h2>
+                    <p className="text-sm sm:text-lg mb-3">
+                      KD {Number(product.price).toFixed(3)}
+                    </p>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

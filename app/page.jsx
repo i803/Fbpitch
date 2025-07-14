@@ -156,7 +156,7 @@ export default function FootballKitStore() {
             <div className="flex items-center justify-between gap-3">
               <Link href="/" className="flex-shrink-0 flex items-center">
                 <img
-                  src="/Fbpitch-logo.png"
+                  src="/fbpitch-logo.png"
                   alt="Fbpitch Logo"
                   className="h-12 w-auto object-contain"
                 />

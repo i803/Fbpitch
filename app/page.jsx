@@ -25,7 +25,6 @@ function Spinner() {
   );
 }
 
-// HeroBanner with no width limits on header and text container to remove "borders"
 function HeroBanner({
   darkMode,
   setDarkMode,
@@ -41,20 +40,14 @@ function HeroBanner({
 }) {
   return (
     <section
-      className="relative w-full h-screen bg-cover bg-center"
+      className="relative w-full min-h-screen bg-cover bg-center overflow-hidden"
       style={{ backgroundImage: "url('/hero-banner.jpg')" }}
     >
-      {/* Dark overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
-      {/* Header */}
       <header className="absolute top-0 left-0 right-0 px-4 md:px-8 py-4 md:py-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between z-20 bg-transparent">
-
-        {/* Logo + Search */}
         <div className="flex w-full items-center gap-3 md:flex-1">
-          <Link href="/" 
-          className="flex-shrink-0 ml-6 sm:ml-0"
-          >
+          <Link href="/" className="flex-shrink-0 ml-6 sm:ml-0">
             <img
               src="/fbpitch-logo.png"
               alt="Fbpitch Logo"
@@ -65,15 +58,15 @@ function HeroBanner({
           <div className="relative flex-grow">
             <input
               type="text"
-  placeholder="Search kits..."
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-  onKeyDown={(e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      onShopNowClick(); // scrolls to products
-    }
-  }}
+              placeholder="Search kits..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  onShopNowClick();
+                }
+              }}
               className="border border-white bg-black bg-opacity-30 rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-400 text-white placeholder-white"
               aria-label="Search kits"
             />
@@ -81,7 +74,6 @@ function HeroBanner({
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex justify-end gap-3 flex-wrap md:flex-nowrap">
           <a
             href="https://www.instagram.com/fbpitch/"
@@ -124,7 +116,6 @@ function HeroBanner({
         </div>
       </header>
 
-      {/* Hero Text */}
       <div className="absolute inset-0 flex flex-col justify-center items-center text-white px-6 z-10 text-center">
         <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 leading-snug drop-shadow-lg">
           Discover the Latest Football Kits
@@ -134,32 +125,7 @@ function HeroBanner({
         </p>
         <button
           onClick={onShopNowClick}
-          className="
-            relative
-            inline-flex
-            items-center
-            justify-center
-            bg-white
-            text-gray-800
-            font-semibold
-            px-8
-            py-4
-            rounded-lg
-            shadow-md
-            hover:bg-gray-100
-            hover:text-gray-900
-            hover:shadow-lg
-            hover:scale-105
-            transition
-            transform
-            duration-300
-            ease-in-out
-            focus:outline-none
-            focus:ring-4
-            focus:ring-gray-400
-            focus:ring-opacity-50
-            overflow-hidden
-          "
+          className="relative inline-flex items-center justify-center bg-white text-gray-800 font-semibold px-8 py-4 rounded-lg shadow-md hover:bg-gray-100 hover:text-gray-900 hover:shadow-lg hover:scale-105 transition transform duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-gray-400 focus:ring-opacity-50 overflow-hidden"
           type="button"
           aria-label="Shop now"
         >
@@ -189,42 +155,36 @@ export default function FootballKitStore() {
     "KITS FOR KIDS",
   ];
 
-  // Ref for scrolling to products
   const productsRef = useRef(null);
 
-function easeInOutQuad(t) {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
-const scrollToProducts = () => {
-  if (!productsRef.current) return;
-
-  // Calculate exact position of productsRef relative to the viewport
-  // We'll scroll so productsRef's top aligns exactly to window top (offset 0)
-  // If you have a fixed header, add its height here to offset accordingly
-  const headerHeight = 0; // set to e.g. 80 if you have fixed header
-  const targetY = productsRef.current.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-
-  const startY = window.pageYOffset;
-  const distance = targetY - startY;
-  const duration = 600; // scroll duration in ms
-  let startTime = null;
-
-  function animation(currentTime) {
-    if (!startTime) startTime = currentTime;
-    const timeElapsed = currentTime - startTime;
-    const progress = Math.min(timeElapsed / duration, 1);
-    const ease = easeInOutQuad(progress);
-
-    window.scrollTo(0, startY + distance * ease);
-
-    if (timeElapsed < duration) {
-      requestAnimationFrame(animation);
-    }
+  function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
 
-  requestAnimationFrame(animation);
-};
+  const scrollToProducts = () => {
+    if (!productsRef.current) return;
+    const targetY =
+      productsRef.current.getBoundingClientRect().top +
+      window.pageYOffset -
+      0;
+    const startY = window.pageYOffset;
+    const distance = targetY - startY;
+    const duration = 600;
+    let startTime = null;
+
+    function animation(currentTime) {
+      if (!startTime) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      const ease = easeInOutQuad(progress);
+      window.scrollTo(0, startY + distance * ease);
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animation);
+      }
+    }
+
+    requestAnimationFrame(animation);
+  };
 
   useEffect(() => {
     async function fetchProducts() {
@@ -246,8 +206,6 @@ const scrollToProducts = () => {
     if (loggedInUser) {
       const storedCart = JSON.parse(localStorage.getItem(`cart-${loggedInUser}`) || "[]");
       setCart(storedCart);
-    } else {
-      setCart([]);
     }
 
     const savedDarkMode = localStorage.getItem("darkMode");
@@ -261,18 +219,14 @@ const scrollToProducts = () => {
   }, []);
 
   useEffect(() => {
-    // Exclude shorts category
     let filtered = products.filter(
-      (p) =>
-        Array.isArray(p.categories) &&
-        !p.categories.includes("SHORTS")
+      (p) => Array.isArray(p.categories) && !p.categories.includes("SHORTS")
     );
 
     if (selectedCategory !== "ALL") {
       filtered = filtered.filter(
         (p) =>
-          Array.isArray(p.categories) &&
-          p.categories.includes(selectedCategory)
+          Array.isArray(p.categories) && p.categories.includes(selectedCategory)
       );
     }
 
@@ -284,7 +238,6 @@ const scrollToProducts = () => {
 
     setFilteredProducts(filtered);
 
-    // Sync category to URL (without adding history entry)
     const encodedCategory = encodeURIComponent(selectedCategory);
     const url = selectedCategory === "ALL" ? "/" : `/?category=${encodedCategory}`;
     router.replace(url, { scroll: false });
@@ -330,167 +283,155 @@ const scrollToProducts = () => {
   };
 
   return (
-    <div
-      className={`min-h-screen flex flex-col ${
-        darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      } font-sans`}
-    >
-      <HeroBanner
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        cartLength={cart.length}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        handleAdminAccess={handleAdminAccess}
-        handleAddToCartClick={handleAddToCartClick}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        categories={categories}
-        onShopNowClick={scrollToProducts}
-      />
+    <div class="min-h-screen w-full bg-black text-white overflow-x-hidden m-0 p-0">
+      <div className={`w-full min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-transparent text-gray-900"} font-sans`}>
+        <HeroBanner
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+          cartLength={cart.length}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          handleAdminAccess={handleAdminAccess}
+          handleAddToCartClick={handleAddToCartClick}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          categories={categories}
+          onShopNowClick={scrollToProducts}
+        />
 
-      <div className="md:hidden">
-        <Sidebar />
-      </div>
+        <div className="md:hidden">
+          <Sidebar />
+        </div>
 
-      <div
-        ref={productsRef}
-        className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10"
-      >
-        {/* Suspense wrapper for searchParams handler */}
-        <Suspense fallback={null}>
-          <SearchParamHandler
-            categories={categories}
-            setSelectedCategory={setSelectedCategory}
-          />
-        </Suspense>
+        <div ref={productsRef} className="flex-grow p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto relative z-10">
+          <Suspense fallback={null}>
+            <SearchParamHandler
+              categories={categories}
+              setSelectedCategory={setSelectedCategory}
+            />
+          </Suspense>
 
-        {/* Category Bar */}
-        <section className="overflow-x-auto px-4 pb-2">
-          <div className="flex flex-nowrap gap-3 whitespace-nowrap">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
-                  selectedCategory === cat
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : darkMode
-                    ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-                }`}
-                onClick={() => setSelectedCategory(cat)}
-                aria-pressed={selectedCategory === cat}
-              >
-                {cat}
-              </button>
-            ))}
+          <section className="overflow-x-auto px-4 pb-2">
+            <div className="flex flex-nowrap gap-3 whitespace-nowrap">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
+                    selectedCategory === cat
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : darkMode
+                      ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
+                  }`}
+                  onClick={() => setSelectedCategory(cat)}
+                  aria-pressed={selectedCategory === cat}
+                >
+                  {cat}
+                </button>
+              ))}
 
-            <Link href="/shorts" passHref>
-              <button
-                className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
-                  darkMode
-                    ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
-                }`}
-              >
-                SHORTS
-              </button>
-            </Link>
-          </div>
-        </section>
+              <Link href="/shorts" passHref>
+                <button
+                  className={`px-4 py-2 rounded-full border transition-colors duration-200 shrink-0 ${
+                    darkMode
+                      ? "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700 hover:border-gray-500"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50 hover:border-indigo-400"
+                  }`}
+                >
+                  SHORTS
+                </button>
+              </Link>
+            </div>
+          </section>
 
-        {/* Products Grid */}
-        <section className="mt-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8">
-          {loading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="border rounded-xl overflow-hidden animate-pulse bg-white dark:bg-gray-800 flex flex-col"
-              >
-                <div className="h-64 bg-gray-300 dark:bg-gray-700" />
-                <div className="p-4 flex flex-col flex-grow justify-between">
-                  <div>
-                    <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-2" />
-                    <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-4" />
-                  </div>
-                  <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded" />
-                </div>
-              </div>
-            ))
-          ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <div
-                key={product._id || product.id}
-                className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer flex flex-col ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-                onClick={() => handleAddToCartClick(product)}
-              >
-                <div className="relative w-full h-64 overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Badges */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {product.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+          <section className="mt-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8">
+            {loading ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="border rounded-xl overflow-hidden animate-pulse bg-white dark:bg-gray-800 flex flex-col"
+                >
+                  <div className="h-64 bg-gray-300 dark:bg-gray-700" />
+                  <div className="p-4 flex flex-col flex-grow justify-between">
+                    <div>
+                      <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-2" />
+                      <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-4" />
+                    </div>
+                    <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded" />
                   </div>
                 </div>
+              ))
+            ) : filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <div
+                  key={product._id || product.id}
+                  className={`border dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg hover:scale-[1.03] transition-transform duration-300 cursor-pointer flex flex-col ${
+                    darkMode ? "bg-gray-800" : "bg-white"
+                  }`}
+                  onClick={() => handleAddToCartClick(product)}
+                >
+                  <div className="relative w-full h-64 overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                      {product.tags?.map((tag) => (
+                        <span
+                          key={tag}
+                          className="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
-                {/* Text content */}
-                <div className="p-4 flex flex-col justify-between flex-grow ">
-                  <h2 className="text-sm sm:text-base font-semibold mb-2 line-clamp-3">
-                    {product.name}
-                  </h2>
-                  <p className="text-sm sm:text-lg mb-3">
-                    KD {Number(product.price).toFixed(3)}
-                  </p>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToCartClick(product);
-                    }}
-                    className="mt-auto bg-black text-white text-sm font-medium py-2 px-4 rounded hover:bg-gray-800 transition"
-                  >
-                    Add to Cart
-                  </button>
+                  <div className="p-4 flex flex-col justify-between flex-grow">
+                    <h2 className="text-sm sm:text-base font-semibold mb-2 line-clamp-3">
+                      {product.name}
+                    </h2>
+                    <p className="text-sm sm:text-lg mb-3">
+                      KD {Number(product.price).toFixed(3)}
+                    </p>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCartClick(product);
+                      }}
+                      className="mt-auto bg-black text-white text-sm font-medium py-2 px-4 rounded hover:bg-gray-800 transition"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center w-full">No products found.</p>
-          )}
-        </section>
+              ))
+            ) : (
+              <p className="text-center w-full">No products found.</p>
+            )}
+          </section>
 
-        <footer className="mt-16 text-center text-sm">
-          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap justify-center mb-2">
-            <div className="flex items-center gap-2">
-              <Shirt size={18} /> Retro & Current Kits
+          <footer className="mt-16 text-center text-sm">
+            <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap justify-center mb-2">
+              <div className="flex items-center gap-2">
+                <Shirt size={18} /> Retro & Current Kits
+              </div>
+              <div className="flex items-center gap-2">
+                <Globe size={18} /> Shipping Within Kuwait Only
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={18} /> Fast Delivery
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Globe size={18} /> Shipping Within Kuwait Only
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock size={18} /> Fast Delivery
-            </div>
-          </div>
-          <p>&copy; 2025 Fbpitch. All rights reserved.</p>
-        </footer>
+            <p>&copy; 2025 Fbpitch. All rights reserved.</p>
+          </footer>
+        </div>
       </div>
     </div>
   );
 }
 
-// SearchParamHandler: sets category from URL param once on mount
 function SearchParamHandler({ categories, setSelectedCategory }) {
   const searchParams = useSearchParams();
   const category = searchParams.get("category")?.toUpperCase() || "ALL";
@@ -501,9 +442,7 @@ function SearchParamHandler({ categories, setSelectedCategory }) {
     } else {
       setSelectedCategory("ALL");
     }
-    // Run only once on initial mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // run once only
 
   return null;
 }

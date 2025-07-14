@@ -131,22 +131,24 @@ export default function ShortsPage() {
         <header className="mb-6 px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <Link href="/" className="flex items-center gap-3 justify-center md:justify-start">
-              <img src="/fbpitch-logo.png" alt="Fbpitch Logo" className="h-10 sm:h-12 w-10 sm:w-12 object-contain" />
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wide uppercase text-indigo-600 font-poppins">
-                Fbpitch
-              </h1>
-            </Link>
+  <img
+    src="/Fbpitch-shorts.png"
+    alt="Fbpitch Logo"
+    className="h-12 w-auto object-contain" // changed from h-20 to h-12
+  />
+</Link>
 
-            <div className="relative w-full md:flex-1 md:mx-6">
-              <input
-                type="text"
-                placeholder="Search shorts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="border dark:border-gray-600 rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
-              />
-              <Search className="absolute left-3 top-2.5 text-gray-500" size={18} />
-            </div>
+
+            <div className="relative w-full md:flex-1 md:-ml-2 md:mr-4">
+  <input
+    type="text"
+    placeholder="Search shorts..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="pl-10 pr-4 py-2 rounded-full w-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+  />
+  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+</div>
 
             <div className="flex justify-end gap-4">
               <a href="https://www.instagram.com/fbpitch/" target="_blank" rel="noopener noreferrer">

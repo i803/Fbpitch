@@ -2,33 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optional: Global custom styles */
+/* Global Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Body Styling */
 body {
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
-  /* Add background and text colors with dark mode support */
   @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Headings */
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 700; /* Use normal CSS, not @apply */
+  font-weight: 700;
 }
 
-/* Ensure borders adapt to dark mode by default */
+/* Borders should adapt to dark mode */
 .border {
   @apply border-gray-300 dark:border-gray-600;
 }
 
-/* Inputs and buttons with borders adapt to dark mode */
-input, button {
+/* Inputs and buttons */
+input,
+button {
   @apply border border-gray-300 dark:border-gray-600;
-}
-
-/* Optional: smooth transition for background and color */
-body, input, button {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-
-
+/* Optional: prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+}

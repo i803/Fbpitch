@@ -102,7 +102,7 @@ export default function ShortsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-3">
             <Link href="/" className="flex items-center gap-3 justify-center md:justify-start">
               <img
-                src="/Fbpitch-logo.png"
+                src="/fbpitch-logo.png"
                 alt="Fbpitch Logo"
                 className="h-12 w-auto object-contain"
               />

@@ -8,7 +8,6 @@ import { usePathname, useRouter } from "next/navigation";
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -17,30 +16,17 @@ export default function Sidebar() {
     setIsUserLoggedIn(!!token);
   };
 
-  const syncDarkMode = () => {
-    setDarkMode(document.documentElement.classList.contains("dark"));
-  };
-
   useEffect(() => {
     checkLogin();
-    syncDarkMode();
 
     const handleFocus = () => {
       checkLogin();
-      syncDarkMode();
     };
-
-    const observer = new MutationObserver(syncDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
 
     window.addEventListener("focus", handleFocus);
 
     return () => {
       window.removeEventListener("focus", handleFocus);
-      observer.disconnect();
     };
   }, []);
 
@@ -84,9 +70,7 @@ export default function Sidebar() {
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        className={`fixed top-4 left-4 z-[100] p-3 rounded-full transition duration-300 ${
-          darkMode ? "text-white hover:bg-white/10" : "text-black hover:bg-black/10"
-        }`}
+        className="fixed top-4 left-4 z-[100] p-3 rounded-full transition duration-300 text-black hover:bg-black/10"
       >
         {open ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -101,7 +85,7 @@ export default function Sidebar() {
 
       {/* Sidebar Panel */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 z-50 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-500 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-64 z-50 bg-white shadow-lg transform transition-transform duration-500 ease-in-out ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         role="navigation"

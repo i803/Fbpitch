@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Poppins Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
 /* Global Reset */
 *,
 *::before,
@@ -9,52 +12,71 @@
   box-sizing: border-box;
 }
 
-/* global.css or tailwind base */
-html, body, #__next {
+/* Prevent horizontal scroll */
+html,
+body,
+#__next {
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow-x: hidden; /* prevent horizontal scroll */
+  overflow-x: hidden;
 }
-
-
 
 /* Body Styling */
 body {
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
-  @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300;
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
 }
 
-/* Borders should adapt to dark mode */
-
-/* Inputs and buttons */
+/* Inputs and Buttons */
 .search-input {
   @apply border-0 border-b border-gray-600 bg-transparent focus:outline-none;
   transition: border-color 0.3s ease, color 0.3s ease;
 }
 
+/* Focus Styles (Improved Accessibility) */
+.search-input:focus-visible {
+  @apply ring-2 ring-indigo-500 outline-none;
+}
+
+/* Fullscreen Overlay (e.g. Sidebar or Loader) */
 .fixed-fullscreen-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #1c1c1c; /* dark gray */
+  background-color: #1c1c1c;
   z-index: 9999;
   display: flex;
   flex-direction: column;
   padding: 1rem;
 }
 
-/* Optional: prevent horizontal scroll */
+/* Sidebar */
 .sidebar {
   transition: transform 0.5s ease-in-out;
+  will-change: transform;
+}
+
+/* Borders adapt to dark mode */
+.border {
+  @apply border-gray-300 dark:border-gray-700;
+}
+
+/* Optional: Add Tailwind container defaults if used in layout */
+.container {
+  @apply mx-auto px-4;
 }

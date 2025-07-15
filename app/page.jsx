@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../components/Sidebar";
-import { Shirt, Globe, Clock, Search, X } from "lucide-react";
+import { Shirt, Globe, Clock, Search, X, ShoppingCart } from "lucide-react";
 
 function Spinner() {
   return (
@@ -135,6 +135,9 @@ export default function FootballKitStore() {
     }
   }, [isMobileSearchOpen]);
 
+  // Total items count for cart icon badge
+  const totalCartItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
   return (
     <div className={`min-h-screen flex ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"} font-sans`}>
       <div className="md:hidden">
@@ -147,39 +150,71 @@ export default function FootballKitStore() {
         </Suspense>
 
         <div
-  className={`sticky top-0 z-40 shadow-md transition-all duration-700 ease-in-out ${
-    showStickyTop ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
-  } ${darkMode ? "bg-gray-900" : "bg-white"}`}
->
-
+          className={`sticky top-0 z-40 shadow-md transition-all duration-700 ease-in-out ${
+            showStickyTop ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+          } ${darkMode ? "bg-gray-900" : "bg-white"}`}
+        >
           <header className="px-4 py-2 max-w-7xl mx-auto">
             <div className="flex items-center justify-between gap-3">
+
+              {/* Logo */}
               <Link href="/" className="flex-shrink-0 flex items-center">
                 <img
-                  src="/Fbpitch-logo.png"
+                  src="/fbpitch-logo.png"
                   alt="Fbpitch Logo"
                   className="h-12 w-auto object-contain"
                 />
               </Link>
 
-              <div className="relative flex-grow min-w-0 hidden sm:block mx-4">
-                <input
-                  type="text"
-                  placeholder="Search kits..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border dark:border-gray-600 rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
-                />
-                <Search className="absolute left-3 top-2.5 text-gray-500" size={18} />
+              {/* Search + Cart (big screens) */}
+              <div className="hidden sm:flex items-center flex-grow mx-4 gap-4">
+                <div className="relative flex-grow min-w-0">
+                  <input
+                    type="text"
+                    placeholder="Search kits..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="border dark:border-gray-600 rounded-full px-10 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                  />
+                  <Search className="absolute left-3 top-2.5 text-gray-500" size={18} />
+                </div>
+                <Link
+                  href="/cart"
+                  aria-label="View Cart"
+                  className="relative inline-flex items-center justify-center rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  <ShoppingCart size={24} className={`${darkMode ? "text-white" : "text-gray-900"}`} />
+                  {totalCartItems > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                      {totalCartItems}
+                    </span>
+                  )}
+                </Link>
               </div>
 
-              <button
-                className="sm:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center"
-                aria-label="Open search"
-                onClick={handleMobileSearchToggle}
-              >
-                <Search size={24} className="text-gray-600 dark:text-gray-300" />
-              </button>
+              {/* Search + Cart (small screens) */}
+              <div className="sm:hidden flex items-center gap-2">
+                <button
+                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center"
+                  aria-label="Open search"
+                  onClick={handleMobileSearchToggle}
+                >
+                  <Search size={24} className={`${darkMode ? "text-white" : "text-gray-900"}`} />
+                </button>
+                <Link
+                  href="/cart"
+                  aria-label="View Cart"
+                  className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center"
+                >
+                  <ShoppingCart size={24} className={`${darkMode ? "text-white" : "text-gray-900"}`} />
+                  {totalCartItems > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                      {totalCartItems}
+                    </span>
+                  )}
+                </Link>
+              </div>
+
             </div>
 
             {isMobileSearchOpen && (
@@ -289,9 +324,7 @@ export default function FootballKitStore() {
                   <h2 className="text-sm sm:text-base font-semibold mb-2 line-clamp-3">
                     {product.name}
                   </h2>
-                  <p className="text-sm sm:text-lg mb-3">
-                    KD {Number(product.price).toFixed(3)}
-                  </p>
+                  <p className="text-sm sm:text-lg mb-3">KD {Number(product.price).toFixed(3)}</p>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

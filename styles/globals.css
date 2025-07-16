@@ -1,9 +1,9 @@
+/* Import Poppins Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import Poppins Font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
 /* Global Reset */
 *,
@@ -76,7 +76,7 @@ h6 {
   @apply border-gray-300 dark:border-gray-700;
 }
 
-/* Optional: Add Tailwind container defaults if used in layout */
+/* Optional: Container padding */
 .container {
   @apply mx-auto px-4;
 }

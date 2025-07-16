@@ -31,10 +31,17 @@ export default function LoginPage() {
       if (res.ok) {
         localStorage.setItem("userToken", data.token);
         localStorage.setItem("loggedInUser", data.username);
+        localStorage.setItem("userRole", data.role); // save role
+
         setSuccess("Login successful! Redirecting...");
+
         setTimeout(() => {
-          router.push("/");
-        }, 1000); // optional delay for UX
+          if (data.role === "admin") {
+            router.push("/admin"); // redirect to admin dashboard
+          } else {
+            router.push("/"); // normal user
+          }
+        }, 1000);
       } else {
         setError(data.message || data.error || "Login failed");
       }

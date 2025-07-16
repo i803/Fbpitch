@@ -71,9 +71,31 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!localStorage.getItem("adminToken")) return router.push("/admin/login");
-    fetchProducts();
-  }, [router]);
+  const init = async () => {
+    const token = localStorage.getItem("adminToken") || localStorage.getItem("userToken");
+
+    if (!token) return router.replace("/admin/login");
+
+    try {
+      const res = await fetch("/api/verify-admin", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error();
+
+      await fetchProducts();
+    } catch {
+      router.replace("/admin/login");
+    }
+  };
+
+  init();
+}, [router]);
 
   async function fetchProducts() {
     try {
@@ -92,9 +114,10 @@ export default function AdminPage() {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
     if (!preset || !cloudName) {
-      alert("Cloudinary config missing.");
-      throw new Error("Cloudinary config missing");
-    }
+  console.error("Missing Cloudinary environment variables");
+  alert("Image upload config missing. Please contact developer.");
+  throw new Error("Cloudinary config missing");
+}
 
     const formData = new FormData();
     formData.append("file", file);
@@ -619,6 +642,13 @@ export default function AdminPage() {
                     <Edit2 size={14} /> Edit
                   </Button>
                   {/* Add Delete button and other controls if needed */}
+                  <Button
+  variant="destructive"
+  size="sm"
+  onClick={() => handleDelete(prod._id)}
+>
+  Delete
+</Button>
                 </div>
               </div>
             ))

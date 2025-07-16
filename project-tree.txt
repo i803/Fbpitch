@@ -1,0 +1,91 @@
+﻿├─ .vscode\
+   settings.json
+├─ app\
+  ├─ admin\
+    ├─ analytics\
+       page.jsx
+    ├─ contact-messages\
+       page.jsx
+    ├─ login\
+       page.jsx
+     page.jsx
+  ├─ api\
+    ├─ admin-contact-messages\
+       route.js
+    ├─ admin-login\
+       route.js
+    ├─ contact\
+       route.js
+    ├─ login\
+       route.js
+    ├─ orders\
+       route.js
+    ├─ products\
+      ├─ [id]\
+       route.js
+    ├─ save-order\
+       route.js
+    ├─ signup\
+       route.js
+    ├─ test-mongo\
+       route.js
+    ├─ verify-admin\
+       route.js
+  ├─ care\
+     page.jsx
+  ├─ cart\
+     page.jsx
+  ├─ contact\
+     page.jsx
+  ├─ login\
+     page.jsx
+  ├─ privacy\
+     page.jsx
+  ├─ product\
+    ├─ [id]\
+  ├─ return-policy\
+     page.jsx
+  ├─ shorts\
+     page.jsx
+  ├─ signup\
+     page.jsx
+  ├─ terms\
+     page.jsx
+  ├─ test-paypal\
+     page.jsx
+  ├─ thank-you\
+     page.jsx
+   layout.js
+   page.jsx
+├─ components\
+  ├─ ui\
+     button.jsx
+     card.jsx
+   Footer.jsx
+   Sidebar.jsx
+├─ lib\
+   auth.js
+   cloudinary.js
+   googleSheets.js
+   mongoose.js
+├─ models\
+   ContactMessage.js
+   Order.js
+   Product.js
+   User.js
+├─ public\
+   Fbpitch-logo.png
+   hero-banner.jpg
+   instagram.png
+├─ styles\
+   globals.css
+ .env.local
+ .gitignore
+ jsconfig.json
+ jwt-test.js
+ middleware.js
+ package-lock.json
+ package.json
+ postcss.config.js
+ project-tree.txt
+ tailwind.config.js

@@ -38,6 +38,7 @@ export async function POST(request) {
         message: "Welcome back! You’re now logged in.",
         token,
         username: user.username,
+        role: user.role || "user", // include role
       },
       { status: 200 }
     );

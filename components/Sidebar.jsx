@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, Moon, Sun } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -15,6 +16,29 @@ export default function Sidebar() {
     const token = localStorage.getItem("userToken");
     setIsUserLoggedIn(!!token);
   };
+
+  // Load dark mode from localStorage on mount
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem("darkMode");
+    if (savedDarkMode === "true") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark");
+    } else {
+      setDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  // Update dark mode class and localStorage whenever toggled
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("darkMode", "true");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("darkMode", "false");
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     checkLogin();
@@ -63,6 +87,10 @@ export default function Sidebar() {
     router.push("/");
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
+
   return (
     <>
       {/* Sidebar Button (always visible) */}
@@ -70,7 +98,7 @@ export default function Sidebar() {
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        className="fixed top-4 left-4 z-[100] p-3 rounded-full transition duration-300 text-black hover:bg-black/10"
+        className="fixed top-4 left-4 z-[100] p-3 rounded-full transition duration-300 text-black hover:bg-black/10 dark:text-white dark:hover:bg-white/10"
       >
         {open ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -85,7 +113,7 @@ export default function Sidebar() {
 
       {/* Sidebar Panel */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 z-50 bg-white shadow-lg transform transition-transform duration-500 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-64 z-50 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-500 ease-in-out ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         role="navigation"
@@ -95,7 +123,7 @@ export default function Sidebar() {
           <Link
             href="/"
             onClick={() => setOpen(false)}
-            className="text-3xl font-bold mb-8 tracking-wide ml-10 hover:text-blue-500 transition"
+            className="text-3xl font-bold mb-8 tracking-wide ml-10 hover:text-blue-500 transition dark:text-white"
           >
             Fbpitch
           </Link>
@@ -113,8 +141,8 @@ export default function Sidebar() {
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className={`hover:text-blue-500 transition ${
-                  isActive(href) ? "font-bold text-blue-500" : ""
+                className={`hover:text-blue-500 transition dark:hover:text-blue-400 ${
+                  isActive(href) ? "font-bold text-blue-500 dark:text-blue-400" : "dark:text-gray-300"
                 }`}
               >
                 {label}
@@ -126,8 +154,8 @@ export default function Sidebar() {
                 <Link
                   href="/signup"
                   onClick={() => setOpen(false)}
-                  className={`hover:text-blue-500 transition ${
-                    isActive("/signup") ? "font-bold text-blue-500" : ""
+                  className={`hover:text-blue-500 transition dark:hover:text-blue-400 ${
+                    isActive("/signup") ? "font-bold text-blue-500 dark:text-blue-400" : "dark:text-gray-300"
                   }`}
                 >
                   Sign Up
@@ -135,8 +163,8 @@ export default function Sidebar() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className={`hover:text-blue-500 transition ${
-                    isActive("/login") ? "font-bold text-blue-500" : ""
+                  className={`hover:text-blue-500 transition dark:hover:text-blue-400 ${
+                    isActive("/login") ? "font-bold text-blue-500 dark:text-blue-400" : "dark:text-gray-300"
                   }`}
                 >
                   Login
@@ -146,8 +174,8 @@ export default function Sidebar() {
                 <Link
                   href="/admin/login"
                   onClick={() => setOpen(false)}
-                  className={`hover:text-blue-500 transition ${
-                    isActive("/admin/login") ? "font-bold text-blue-500" : ""
+                  className={`hover:text-blue-500 transition dark:hover:text-blue-400 ${
+                    isActive("/admin/login") ? "font-bold text-blue-500 dark:text-blue-400" : "dark:text-gray-300"
                   }`}
                 >
                   Admin Login
@@ -155,6 +183,16 @@ export default function Sidebar() {
               </>
             )}
           </nav>
+
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="mt-6 flex items-center justify-center gap-2 px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition w-full select-none"
+            aria-label="Toggle Dark Mode"
+          >
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
 
           {isUserLoggedIn && (
             <button

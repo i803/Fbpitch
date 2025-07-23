@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../components/Sidebar";
 import { Button } from "../../components/ui/button";
 import { BarChart2, Mail, Edit2, Search as SearchIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 const LEAGUES = [
   "Premier League",
@@ -69,6 +71,9 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const router = useRouter();
+  const [allProducts, setAllProducts] = useState([]);
+  const [deletingProductId, setDeletingProductId] = useState(null);
+
 
   useEffect(() => {
   const init = async () => {
@@ -96,6 +101,25 @@ export default function AdminPage() {
 
   init();
 }, [router]);
+const handleDelete = async (productId) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this product?");
+  if (!confirmDelete) return;
+
+  setDeletingProductId(productId);
+
+  try {
+    const res = await fetch(`/api/products?id=${productId}`, { method: "DELETE" });
+
+    if (!res.ok) throw new Error("Failed to delete");
+
+    setAllProducts((prev) => prev.filter((p) => p._id !== productId));
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert("Failed to delete product.");
+  } finally {
+    setDeletingProductId(null);
+  }
+};
 
   async function fetchProducts() {
     try {
@@ -608,56 +632,65 @@ export default function AdminPage() {
         </section>
 
         {/* Products Grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((prod) => (
-              <div
-                key={prod._id}
-                className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col"
-              >
-                <img
-                  src={prod.image}
-                  alt={prod.name}
-                  className="h-44 w-full object-cover rounded-lg mb-4"
-                />
-                <h3 className="text-lg font-semibold truncate">{prod.name}</h3>
-                <p className="text-gray-700">KWD {prod.price.toFixed(3)}</p>
-                <p className="text-sm text-gray-500 mt-2 truncate">League: {prod.league || "N/A"}</p>
-                <p className="text-sm text-gray-500 truncate">
-                  Categories:{" "}
-                  {Array.isArray(prod.categories) ? prod.categories.join(", ") : ""}
-                </p>
-                <p className="text-sm text-gray-500 truncate">
-                  Tags:{" "}
-                  {Array.isArray(prod.tags) && prod.tags.length ? prod.tags.join(", ") : "None"}
-                </p>
+<section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+  {filteredProducts.length > 0 ? (
+    filteredProducts.map((prod) => (
+      <motion.div
+        key={prod._id}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9, y: 10 }}
+        transition={{ duration: 0.25 }}
+        className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col"
+      >
+        <img
+          src={prod.image}
+          alt={prod.name}
+          className="h-44 w-full object-cover rounded-lg mb-4"
+        />
+        <h3 className="text-lg font-semibold truncate">{prod.name}</h3>
+        <p className="text-gray-700">KWD {prod.price.toFixed(3)}</p>
+        <p className="text-sm text-gray-500 mt-2 truncate">League: {prod.league || "N/A"}</p>
+        <p className="text-sm text-gray-500 truncate">
+          Categories:{" "}
+          {Array.isArray(prod.categories) ? prod.categories.join(", ") : ""}
+        </p>
+        <p className="text-sm text-gray-500 truncate">
+          Tags:{" "}
+          {Array.isArray(prod.tags) && prod.tags.length ? prod.tags.join(", ") : "None"}
+        </p>
 
-                <div className="mt-auto flex gap-2 pt-4 border-t border-gray-200 flex-wrap">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1 whitespace-nowrap"
-                    onClick={() => startEdit(prod)}
-                  >
-                    <Edit2 size={14} /> Edit
-                  </Button>
-                  {/* Add Delete button and other controls if needed */}
-                  <Button
-  variant="destructive"
-  size="sm"
-  onClick={() => handleDelete(prod._id)}
->
-  Delete
-</Button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-600 col-span-full">
-              No jerseys found matching &quot;{searchTerm}&quot;.
-            </p>
-          )}
-        </section>
+        <div className="mt-auto flex gap-2 pt-4 border-t border-gray-200 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 whitespace-nowrap"
+            onClick={() => startEdit(prod)}
+          >
+            <Edit2 size={14} /> Edit
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleDelete(prod._id)}
+            disabled={deletingProductId === prod._id}
+            className="flex items-center gap-1 whitespace-nowrap"
+          >
+            {deletingProductId === prod._id ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              "Delete"
+            )}
+          </Button>
+        </div>
+      </motion.div>
+    ))
+  ) : (
+    <p className="text-center text-gray-600 col-span-full">
+      No jerseys found matching &quot;{searchTerm}&quot;.
+    </p>
+  )}
+</section>
       </main>
     </div>
   );

@@ -778,11 +778,11 @@ export default function HomePage() {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-center md:justify-start gap-3 text-muted-foreground transition-colors hover:text-primary">
                   <span className="text-primary">📧</span>
-                  <span>support@fbpitch.com</span>
+                  <span>fbpitchhelp@gmail.com</span>
                 </div>
                 <div className="flex items-center justify-center md:justify-start gap-3 text-muted-foreground transition-colors hover:text-primary">
                   <span className="text-primary">📞</span>
-                  <span>+965 1234 5678</span>
+                  <span>+965 6674 3690</span>
                 </div>
               </div>
             </div>
@@ -841,10 +841,7 @@ export default function HomePage() {
                 &copy; {new Date().getFullYear()} FbPitch. All rights reserved.
               </p>
               <div className="flex flex-col items-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
-                <div className="flex items-center gap-2 hover:text-primary transition-colors">
-                  <span className="text-primary">🚚</span>
-                  <span>Free shipping over KWD 10</span>
-                </div>
+                
                 <div className="flex items-center gap-2 hover:text-primary transition-colors">
                   <span className="text-primary">🔒</span>
                   <span>Secure payments</span>

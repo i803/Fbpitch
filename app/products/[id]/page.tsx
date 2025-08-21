@@ -558,7 +558,7 @@ export default function ProductPage({ params }: ReadonlyPageProps) {
                     ))}
                   </Swiper>
                 ) : (
-                  <div className="relative w-full h-[440px] rounded-lg border bg-white">
+                  <div className="relative w-full h-[440px] rounded-lg border bg-black">
                     <Image
                       src={gallery[0].url}
                       alt={`${product.name}`}

@@ -391,17 +391,19 @@ export default function CartPage() {
       const userId = username ?? null;
 
       const payload = {
-        orderId,
-        userId, // required by /api/orders - backend will transform to ObjectId
-        total: amount, // primary amount (from PayPal amount or KWD total for COD)
-        totalKWD, // helpful for backend records
-        customer: username,
-        paymentMethod: method,
-        promoCode: promoCode?.trim()?.toUpperCase() || null,
-        discountPercent: promoDiscountPercent,
-        address: addressData,
-        items: cart,
-      };
+  orderId,
+  userId, // required by /api/orders - backend will transform to ObjectId
+  totalAmount: totalKWD, // required by backend
+  total: amount, // primary amount (from PayPal amount or KWD total for COD)
+  totalKWD, // helpful for backend records
+  customer: username,
+  paymentMethod: method,
+  promoCode: promoCode?.trim()?.toUpperCase() || null,
+  discountPercent: promoDiscountPercent,
+  shippingAddress: addressData, // renamed to match backend
+  items: cart,
+};
+
 
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -426,6 +428,13 @@ export default function CartPage() {
     }
   };
 
+  /* --------------------------
+     COD handler (commented out)
+     --------------------------
+     If you want to re-enable Cash on Delivery (COD) later,
+     uncomment this function and the COD button in the JSX below.
+  */
+  /*
   const handleCOD = async () => {
     if (!username) return alert("Please login to place order.");
     if (!validateForm()) return;
@@ -438,6 +447,7 @@ export default function CartPage() {
       alert("An error occurred while placing your order: " + errorMessage);
     }
   };
+  */
 
   const updateQuantity = (idx: number, nextQty: number) => {
     if (nextQty < 1) return;
@@ -783,6 +793,9 @@ export default function CartPage() {
                     </div>
                   </div>
 
+                  {/* 
+                    COD option removed for now — commented out so you can re-enable later.
+
                   <div className="flex items-center gap-3 my-2">
                     <div className="flex-1 h-px bg-border" />
                     <div className="text-sm text-muted-foreground px-2">or</div>
@@ -795,6 +808,9 @@ export default function CartPage() {
                   >
                     Cash on Delivery (COD)
                   </Button>
+                  
+                  */}
+
                 </div>
               </div>
             </>

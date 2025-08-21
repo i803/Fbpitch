@@ -1,12 +1,33 @@
+// app/api/orders/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import { Order } from "@/lib/models/Order";
-import type { Order as OrderType } from "@/lib/types";
+import type { Order as OrderType, CartItem } from "@/lib/types";
 import { Types } from "mongoose";
-import {
-  sendAdminOrderNotification,
-  sendCustomerOrderReceipt,
-} from "@/lib/mailer";
+import { sendAdminOrderNotification } from "@/lib/mailer";
+
+// -------------------------
+// POST body interface
+// -------------------------
+interface CreateOrderBody {
+  userId: string;
+  items: CartItem[];
+  total?: number;
+  totalAmount?: number;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+    email?: string;
+    name?: string;
+  };
+  paymentMethod: string;
+  promoCode?: string;
+  discountPercent?: number;
+  customer?: string;
+}
 
 // -------------------------
 // Helpers
@@ -53,10 +74,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ orders });
   } catch (error) {
     console.error("❌ Error fetching orders:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch orders" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }
 }
 
@@ -65,57 +83,63 @@ export async function GET(request: NextRequest) {
 // -------------------------
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body: CreateOrderBody = await request.json();
 
+    // Validation
     if (!body || !Array.isArray(body.items) || body.items.length === 0) {
-      return NextResponse.json(
-        { error: "items (non-empty array) is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "items (non-empty array) is required" }, { status: 400 });
     }
 
-    if (body.totalAmount === undefined) {
-      return NextResponse.json(
-        { error: "totalAmount is required" },
-        { status: 400 }
-      );
+    if (body.total === undefined && body.totalAmount === undefined) {
+      return NextResponse.json({ error: "total or totalAmount is required" }, { status: 400 });
     }
 
     await dbConnect();
 
+    // Ensure shippingAddress has all fields
+    const shippingAddress = {
+      street: body.address?.street ?? "",
+      city: body.address?.city ?? "",
+      state: body.address?.state ?? "",
+      zipCode: body.address?.zipCode ?? "",
+      country: body.address?.country ?? "",
+      email: body.address?.email,
+      name: body.address?.name,
+    };
+
+    const totalAmount = Number(body.totalAmount ?? body.total ?? 0);
+    const discountPercent = Number(body.discountPercent ?? 0);
+    const promoCode = body.promoCode?.trim()?.length ? body.promoCode.trim().toUpperCase() : undefined;
+
+    // Create order document
     const orderDoc: Partial<OrderType> = {
       userId: body.userId,
       items: body.items,
-      totalAmount: body.totalAmount,
+      totalAmount,
       paymentMethod: body.paymentMethod,
       status: "pending",
-      shippingAddress: body.shippingAddress,
+      shippingAddress,
+      promoCode,
+      discountPercent,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const newOrder = await Order.create(orderDoc);
-
     const orderId = (newOrder._id as Types.ObjectId).toString();
 
+    // Send admin email only
+    const emailPayload = { ...orderDoc, customerName: body.customer || shippingAddress.name || "Customer" };
     try {
-      await sendAdminOrderNotification(orderId, body);
-      await sendCustomerOrderReceipt(orderId, body);
+      await sendAdminOrderNotification(orderId, emailPayload);
     } catch (notifErr) {
-      console.error("⚠️ Failed to send emails:", notifErr);
+      console.error("⚠️ Failed to send admin email:", notifErr);
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Order created successfully",
-      orderId,
-    });
+    return NextResponse.json({ success: true, message: "Order created successfully", orderId });
   } catch (error) {
     console.error("❌ Error creating order:", error);
-    return NextResponse.json(
-      { error: "Failed to create order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }
 
@@ -128,34 +152,19 @@ export async function DELETE(request: NextRequest) {
     const orderId = searchParams.get("orderId");
 
     if (!orderId || !Types.ObjectId.isValid(orderId)) {
-      return NextResponse.json(
-        { error: "Invalid or missing orderId" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid or missing orderId" }, { status: 400 });
     }
 
     await dbConnect();
-    const deleted = await Order.findByIdAndDelete(orderId)
-      .lean<OrderType>()
-      .exec();
+    const deleted = await Order.findByIdAndDelete(orderId).lean<OrderType>().exec();
 
     if (!deleted) {
-      return NextResponse.json(
-        { error: "Order not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Order deleted successfully",
-      orderId,
-    });
+    return NextResponse.json({ success: true, message: "Order deleted successfully", orderId });
   } catch (error) {
     console.error("❌ Error deleting order:", error);
-    return NextResponse.json(
-      { error: "Failed to delete order" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete order" }, { status: 500 });
   }
 }

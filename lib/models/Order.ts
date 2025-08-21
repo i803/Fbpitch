@@ -31,6 +31,8 @@ const OrderSchema = new Schema<OrderDocument>(
     userId: { type: String, required: true },
     items: { type: [CartItemSchema], required: true },
     totalAmount: { type: Number, required: true },
+    promoCode: { type: String, default: null }, // ✅ added
+    discountPercent: { type: Number, default: 0 }, // ✅ added
     status: {
       type: String,
       enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
@@ -42,6 +44,7 @@ const OrderSchema = new Schema<OrderDocument>(
       state: String,
       zipCode: String,
       country: String,
+      email: String, // optional: for sending order receipt
     },
     paymentMethod: { type: String, required: true },
   },

@@ -228,10 +228,10 @@ export default function CarePage() {
                 </p>
                 <div className="space-y-2 text-sm">
                   <p>
-                    <strong>Email:</strong> care@fbpitch.com
+                    <strong>Email:</strong> fbpitchhelp@gmail.com
                   </p>
                   <p>
-                    <strong>Phone:</strong> +965 1234 5678
+                    <strong>Phone:</strong> +965 6674 3690
                   </p>
                   <p>
                     <strong>Live Chat:</strong> Available on our website during business hours

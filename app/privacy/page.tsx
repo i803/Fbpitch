@@ -154,7 +154,7 @@ export default function PrivacyPage() {
                 </div>
 
                 <p className="text-sm">
-                  To exercise these rights, please contact us at privacy@fbpitch.com. We will respond to your request
+                  To exercise these rights, please contact us at fbpitchhelp@gmail.com. We will respond to your request
                   within 30 days.
                 </p>
               </CardContent>
@@ -190,10 +190,10 @@ export default function PrivacyPage() {
                 <p className="text-sm mb-4">If you have any questions about this Privacy Policy, please contact us:</p>
                 <div className="space-y-2 text-sm">
                   <p>
-                    <strong>Email:</strong> privacy@fbpitch.com
+                    <strong>Email:</strong> fbpitchhelp@gmail.com
                   </p>
                   <p>
-                    <strong>Phone:</strong> +965 1234 5678
+                    <strong>Phone:</strong> +965 6674 3690
                   </p>
                   <p>
                     <strong>Address:</strong> Kuwait City, Kuwait

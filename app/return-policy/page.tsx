@@ -85,7 +85,7 @@ export default function ReturnPolicyPage() {
                     </div>
                     <h4 className="font-semibold mb-1">Contact Us</h4>
                     <p className="text-sm text-muted-foreground">
-                      Email us at returns@fbpitch.com with your order number
+                      Email us at fbpitchhelp@gmail.com with your order number
                     </p>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
@@ -149,13 +149,13 @@ export default function ReturnPolicyPage() {
                 <p className="text-sm mb-4">If you have any questions about our return policy, please contact us:</p>
                 <div className="space-y-2 text-sm">
                   <p>
-                    <strong>Email:</strong> returns@fbpitch.com
+                    <strong>Email:</strong> fbpitchhelp@gmail.com
                   </p>
                   <p>
-                    <strong>Phone:</strong> +965 1234 5678
+                    <strong>Phone:</strong> +965 6674 3690
                   </p>
                   <p>
-                    <strong>Business Hours:</strong> Sunday - Thursday, 9:00 AM - 6:00 PM (Kuwait Time)
+                    <strong>Business Hours:</strong> 24/7 Open
                   </p>
                 </div>
               </CardContent>

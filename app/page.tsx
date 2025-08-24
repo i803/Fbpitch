@@ -642,7 +642,7 @@ export default function HomePage() {
             .animate-fade-up { animation: fade-up 0.9s ease-out forwards; }
           `}</style>
 
-          <p className="mx-auto mb-8 mt-4 max-w-2xl text-base leading-relaxed text-gray-200/95 md:text-xl">Authentic designs, premium quality, worldwide shipping.</p>
+          <p className="mx-auto mb-8 mt-4 max-w-2xl text-base leading-relaxed text-gray-200/95 md:text-xl">Authentic designs, premium quality, Only Available In Kuwait.</p>
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Button
@@ -773,7 +773,7 @@ export default function HomePage() {
                 <Image src="/images/fbpitch-logo.png" alt="FbPitch" width={140} height={56} className="mx-auto mb-4 md:mx-0" />
               </div>
               <p className="mx-auto mb-6 max-w-xs text-sm leading-relaxed text-muted-foreground md:mx-0">
-                Your premier destination for authentic football jerseys and sports apparel. Quality guaranteed with worldwide shipping and exceptional customer service.
+                Your premier destination for authentic football jerseys and sports apparel. Quality guaranteed with exceptional customer service.
               </p>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-center md:justify-start gap-3 text-muted-foreground transition-colors hover:text-primary">

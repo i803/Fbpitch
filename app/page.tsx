@@ -642,7 +642,7 @@ export default function HomePage() {
             .animate-fade-up { animation: fade-up 0.9s ease-out forwards; }
           `}</style>
 
-          <p className="mx-auto mb-8 mt-4 max-w-2xl text-base leading-relaxed text-gray-200/95 md:text-xl">Authentic designs, premium quality, Only Available In Kuwait.</p>
+          <p className="mx-auto mb-8 mt-4 max-w-2xl text-base leading-relaxed text-gray-200/95 md:text-xl">Authentic designs, premium quality, delivered across Kuwait.</p>
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Button

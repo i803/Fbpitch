@@ -8,8 +8,10 @@ const Card = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
+    // added `relative overflow-hidden` so absolutely positioned elements inside cards
+    // (e.g. tag pills placed on top of images) are clipped to the card bounds.
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "relative overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm",
       className
     )}
     {...props}

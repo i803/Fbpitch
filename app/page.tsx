@@ -18,6 +18,7 @@ type ApiProduct = {
   price?: number | string
   image?: string
   categories?: string[]
+  tags?: string[] | string
 }
 
 export type Product = {
@@ -26,6 +27,7 @@ export type Product = {
   price: number
   image?: string
   categories?: string[]
+  tags?: string[]
   _raw?: ApiProduct
 }
 
@@ -39,12 +41,26 @@ function normalizeProduct(p: ApiProduct): Product | null {
   let priceNum = 0
   if (typeof p.price === "string") priceNum = Number.parseFloat(p.price)
   else if (typeof p.price === "number") priceNum = p.price
+
+  // Normalize tags to string[] always
+  let normalizedTags: string[] = []
+  if (Array.isArray(p.tags)) {
+    normalizedTags = p.tags.filter(Boolean).map((t) => String(t))
+  } else if (typeof p.tags === "string") {
+    // Accept comma-separated string as a fallback
+    normalizedTags = p.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+  }
+
   return {
     id: String(idSource),
     name,
     price: Number.isFinite(priceNum) ? priceNum : 0,
     image: p.image ?? "",
     categories: Array.isArray(p.categories) ? p.categories : [],
+    tags: normalizedTags,
     _raw: p,
   }
 }
@@ -415,14 +431,6 @@ export default function HomePage() {
     console.log(`Added product ${productId} to cart`)
   }
 
-  /**
-   * HEADER STICKY WRAPPER:
-   *
-   * We create a fixed wrapper that contains the shared <Header />. Then we measure
-   * its height and render an invisible spacer of the same height so the page flow
-   * remains exactly the same (no jumps). This keeps the header appearance and
-   * behaviour (hamburger, overlays) untouched while making it follow the user.
-   */
   const headerWrapperRef = useRef<HTMLDivElement | null>(null)
   const [headerHeight, setHeaderHeight] = useState<number>(0)
 
@@ -430,7 +438,6 @@ export default function HomePage() {
     const measure = () => {
       const el = headerWrapperRef.current
       if (el) {
-        // take bounding height rounded to integer
         const h = Math.ceil(el.getBoundingClientRect().height)
         setHeaderHeight(h)
       } else {
@@ -438,10 +445,8 @@ export default function HomePage() {
       }
     }
 
-    // measure after mount
     measure()
 
-    // observe size changes if header content changes (e.g., responsive)
     let ro: ResizeObserver | null = null
     if (typeof ResizeObserver !== "undefined" && headerWrapperRef.current) {
       ro = new ResizeObserver(measure)
@@ -455,46 +460,26 @@ export default function HomePage() {
     }
   }, [])
 
-  /**
-   * Close-icon positioning shim:
-   *
-   * Some header implementations render a close ("X") button when the mobile
-   * menu is open. The visual requirement is to have the X appear exactly where
-   * the hamburger icon was (no layout shift), and to transition smoothly into
-   * view. The header component is left untouched; here we observe DOM changes
-   * inside the header wrapper and, when a close button is present, we compute
-   * the hamburger's position and apply inline positioning to the close button.
-   *
-   * This approach avoids modifying the header implementation while ensuring
-   * the X visually overlays the prior hamburger location with a transition.
-   */
   const positionCloseIcon = useCallback(() => {
     const wrapper = headerWrapperRef.current ?? document.querySelector("header")
     if (!wrapper) return
 
     try {
-      // find the open and close menu buttons by common ARIA labels used in examples.
-      // If your header uses different labels, adjust these selectors accordingly.
       const openBtn = wrapper.querySelector<HTMLElement>(
         'button[aria-label="Open menu"], button[aria-label="open menu"], button[aria-label="Open navigation"], button[aria-label="Toggle menu"]'
       )
       const closeBtn = wrapper.querySelector<HTMLElement>('button[aria-label="Close menu"], button[aria-label="close menu"], button[aria-label="Close navigation"]')
 
       if (!openBtn || !closeBtn) {
-        // also try toggled aria-label pattern (same button toggles label)
-        // if there's only one button that toggles label we don't reposition.
         return
       }
 
       const wrapperRect = wrapper.getBoundingClientRect()
       const openRect = openBtn.getBoundingClientRect()
 
-      // compute coordinates relative to wrapper
       const left = Math.round(openRect.left - wrapperRect.left)
       const top = Math.round(openRect.top - wrapperRect.top)
 
-      // apply inline styles to place the close button exactly over the hamburger
-      // while preserving its original size. We add a subtle transition for transform/opacity.
       closeBtn.style.position = "absolute"
       closeBtn.style.left = `${left}px`
       closeBtn.style.top = `${top}px`
@@ -504,11 +489,8 @@ export default function HomePage() {
       closeBtn.style.alignItems = "center"
       closeBtn.style.justifyContent = "center"
       closeBtn.style.transition = "transform 220ms cubic-bezier(.2,.9,.2,1), opacity 180ms ease"
-      // Ensure it is on top visually
       closeBtn.style.zIndex = "9999"
     } catch (err) {
-      // handle exception explicitly to satisfy static analysis
-      // eslint-disable-next-line no-console
       console.debug("positionCloseIcon failed:", err)
     }
   }, [])
@@ -517,17 +499,14 @@ export default function HomePage() {
     const wrapper = headerWrapperRef.current ?? document.querySelector("header")
     if (!wrapper) return
 
-    // Run once in case DOM already present
     positionCloseIcon()
 
-    // Observe changes inside header wrapper to reposition when mobile menu toggles
     const mo = new MutationObserver(() => {
       positionCloseIcon()
     })
 
     mo.observe(wrapper, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "aria-expanded", "aria-hidden", "style"] })
 
-    // Reposition on resize / orientation change
     window.addEventListener("resize", positionCloseIcon)
     window.addEventListener("orientationchange", positionCloseIcon)
 
@@ -536,11 +515,8 @@ export default function HomePage() {
       window.removeEventListener("resize", positionCloseIcon)
       window.removeEventListener("orientationchange", positionCloseIcon)
     }
-    // Header wrapper is stable; no dependency to avoid repeated observers.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positionCloseIcon])
 
-  // DEV ONLY: expose the scroll function for console testing without affecting UI.
   useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
       ;(window as any).__scrollToCategories = scrollToCategories
@@ -550,7 +526,6 @@ export default function HomePage() {
         try {
           delete (window as any).__scrollToCategories
         } catch {
-          // ignore deletion errors
         }
       }
     }
@@ -745,7 +720,12 @@ export default function HomePage() {
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
-                    product={{ ...product, id: product.id ?? "", image: product.image ?? "/placeholder.png" }}
+                    product={{
+                      ...product,
+                      id: product.id ?? "",
+                      image: product.image ?? "/placeholder.png",
+                      tags: product.tags ?? [],
+                    }}
                     onAddToCart={handleAddToCart}
                   />
                 ))}

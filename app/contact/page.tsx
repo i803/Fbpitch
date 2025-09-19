@@ -207,8 +207,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold mb-1">How long does shipping take?</h3>
                     <p className="text-sm text-muted-foreground">
-                      Local delivery within Kuwait takes 1-2 business days. International shipping takes 5-10 business
-                      days.
+                      Local delivery within Kuwait takes 2-3 weeks.
                     </p>
                   </div>
 

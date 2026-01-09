@@ -27,9 +27,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const saveAuthAndRedirect = (data: any) => {
-    // Save token & user in localStorage for client-side access
-    if (data.token) localStorage.setItem("token", data.token);
-    if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+    // ✅ SAVE TOKENS (FIX)
+    if (data.token) {
+      localStorage.setItem("token", data.token);       // general auth
+      localStorage.setItem("adminToken", data.token);  // admin auth
+    }
+
+    if (data.user) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+    }
+
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem(
       "loggedInUser",
@@ -43,12 +50,15 @@ export default function LoginPage() {
       localStorage.setItem("cartItemCount", "0");
     }
 
-    // Fire local event so header and other listeners update
+    // Notify listeners (header, etc.)
     window.dispatchEvent(new Event("authUpdated"));
 
     // Redirect based on role
-    if (data.user?.role === "admin") router.push("/admin");
-    else router.push("/");
+    if (data.user?.role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/");
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -59,11 +69,10 @@ export default function LoginPage() {
     try {
       if (!email || !password) {
         setError("Please fill in all fields");
-        setIsLoading(false);
         return;
       }
 
-      // 1) Try admin-login first (this supports env-admin and DB-admin path)
+      // 1️⃣ Try admin login first
       try {
         const adminRes = await fetch("/api/admin-login", {
           method: "POST",
@@ -74,19 +83,15 @@ export default function LoginPage() {
         if (adminRes.ok) {
           const adminData = await adminRes.json();
           if (adminData?.success) {
-            // admin login success
             saveAuthAndRedirect(adminData);
-            setIsLoading(false);
             return;
           }
         }
-        // If adminRes not ok, fallthrough to user-login
       } catch (err) {
-        // keep trying user login if admin endpoint failed
-        console.warn("admin-login attempt failed, trying /api/login", err);
+        console.warn("Admin login failed, trying user login", err);
       }
 
-      // 2) Fallback: normal user login
+      // 2️⃣ Fallback to normal user login
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,11 +102,9 @@ export default function LoginPage() {
 
       if (!res.ok || !data.success) {
         setError(data.message || "Invalid email or password");
-        setIsLoading(false);
         return;
       }
 
-      // Save + redirect
       saveAuthAndRedirect(data);
     } catch (err) {
       console.error("Login failed:", err);
@@ -125,14 +128,19 @@ export default function LoginPage() {
             />
           </Link>
           <h1 className="text-2xl font-bold">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your FbPitch account</p>
+          <p className="text-muted-foreground">
+            Sign in to your FbPitch account
+          </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardTitle><center>Login</center></CardTitle>
+            <CardDescription>
+              <center>Enter your credentials to access your account</center>
+            </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               {error && (
@@ -168,7 +176,7 @@ export default function LoginPage() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -180,7 +188,11 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full bg-black hover:bg-gray-800 text-white"
+                disabled={isLoading}
+              >
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
@@ -188,7 +200,10 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
-                <Link href="/signup" className="text-primary hover:underline font-medium">
+                <Link
+                  href="/signup"
+                  className="text-primary hover:underline font-medium"
+                >
                   Sign up
                 </Link>
               </p>
@@ -197,7 +212,10 @@ export default function LoginPage() {
         </Card>
 
         <div className="text-center mt-6">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-primary">
+          <Link
+            href="/"
+            className="text-sm text-muted-foreground hover:text-primary"
+          >
             ← Back to Home
           </Link>
         </div>

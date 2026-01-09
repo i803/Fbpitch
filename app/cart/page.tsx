@@ -210,14 +210,6 @@ export default function CartPage() {
   const getDisplayName = (item: any) =>
     item.productName || item.name || "Product";
 
-  /**
-   * Determine canonical images to show for an item in the cart.
-   * Priority:
-   * - If item.images (array) exists -> use that (deduped)
-   * - Else build candidates from legacy fields:
-   *   - jersey first (prefer long sleeves if sleeve === "Long Sleeve")
-   *   - then shorts if requested, otherwise include shorts as fallback
-   */
   const getUniqueImagesForItem = (item: any): string[] => {
     if (Array.isArray(item.images) && item.images.length) {
       return Array.from(new Set(item.images.filter(Boolean)));
@@ -228,7 +220,6 @@ export default function CartPage() {
     const shortsImg = item.shortsImage;
     const legacyMain = item.image;
 
-    // determine jersey
     let jersey: string | undefined;
     if (item.sleeve === "Long Sleeve" && longImg) {
       jersey = longImg;
@@ -242,7 +233,6 @@ export default function CartPage() {
 
     if (jersey) candidates.push(jersey);
 
-    // If shorts were requested explicitly, show shorts after jersey
     const shortsRequested =
       item.addShorts === true ||
       item.shortsSelected === true ||
@@ -251,14 +241,12 @@ export default function CartPage() {
     if (shortsRequested && shortsImg && shortsImg !== jersey) {
       candidates.push(shortsImg);
     } else if (shortsImg && !candidates.includes(shortsImg)) {
-      // include shorts as fallback so users can still swipe it
       candidates.push(shortsImg);
     }
 
     return Array.from(new Set(candidates.filter(Boolean)));
   };
 
-  // Summarize extras (simpler linear logic to reduce complexity)
   const describeExtras = (item: any): string[] => {
     const lines: string[] = [];
 
@@ -282,7 +270,6 @@ export default function CartPage() {
       lines.push("Shorts");
     }
 
-    // badges / extras compact handling
     if (Array.isArray(item.badges) && item.badges.length) {
       lines.push(`Badges: ${item.badges.join(", ")}`);
     } else if (item.badge) {
@@ -304,11 +291,10 @@ export default function CartPage() {
   };
 
   const itemTotalKWD = (item: any): number => {
-    const base = Number(item.price) || 0;
-    const playerBump = item.quality === "Player Version" ? 1 : 0;
-    const qty = typeof item.quantity === "number" && item.quantity > 0 ? item.quantity : 1;
-    return (base + playerBump) * qty;
-  };
+  const qty = typeof item.quantity === "number" && item.quantity > 0 ? item.quantity : 1;
+  return (item.price || 0) * qty; // do NOT add playerBump here
+};
+
 
   const totalKWDBeforeDiscount = useMemo(
     () => cart.reduce((sum, item) => sum + itemTotalKWD(item), 0),
@@ -384,26 +370,22 @@ export default function CartPage() {
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
-  // === sendOrder updated to include userId + total fields ===
   const sendOrder = async (orderId: string, amount: number, method: string) => {
     try {
-      // username is what you store in localStorage as "loggedInUser"
       const userId = username ?? null;
-
       const payload = {
-  orderId,
-  userId, // required by /api/orders - backend will transform to ObjectId
-  totalAmount: totalKWD, // required by backend
-  total: amount, // primary amount (from PayPal amount or KWD total for COD)
-  totalKWD, // helpful for backend records
-  customer: username,
-  paymentMethod: method,
-  promoCode: promoCode?.trim()?.toUpperCase() || null,
-  discountPercent: promoDiscountPercent,
-  shippingAddress: addressData, // renamed to match backend
-  items: cart,
-};
-
+        orderId,
+        userId,
+        totalAmount: totalKWD,
+        total: amount,
+        totalKWD,
+        customer: username,
+        paymentMethod: method,
+        promoCode: promoCode?.trim()?.toUpperCase() || null,
+        discountPercent: promoDiscountPercent,
+        shippingAddress: addressData,
+        items: cart,
+      };
 
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -412,13 +394,10 @@ export default function CartPage() {
       });
 
       const data = await res.json();
-
       if (!res.ok) {
-        // API returns { error: "..." } in many cases
         throw new Error(data.error || data.message || "Unknown server error");
       }
 
-      // success
       handleClearCart();
       sessionStorage.setItem("orderSuccess", "true");
       window.location.href = "/thank-you";
@@ -428,26 +407,17 @@ export default function CartPage() {
     }
   };
 
-  /* --------------------------
-     COD handler (commented out)
-     --------------------------
-     If you want to re-enable Cash on Delivery (COD) later,
-     uncomment this function and the COD button in the JSX below.
-  */
-  /*
   const handleCOD = async () => {
     if (!username) return alert("Please login to place order.");
     if (!validateForm()) return;
 
     try {
-      // For COD we send the KWD total (server expects `total`)
       await sendOrder(`COD-${Date.now()}`, totalKWD, "COD");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
       alert("An error occurred while placing your order: " + errorMessage);
     }
   };
-  */
 
   const updateQuantity = (idx: number, nextQty: number) => {
     if (nextQty < 1) return;
@@ -519,16 +489,9 @@ export default function CartPage() {
                 {cart.map((item, idx) => {
                   const extras = describeExtras(item);
                   const perItemTotal = itemTotalKWD(item);
-
                   const isSelected = selectedIdx === idx;
-
-                  // display name
                   const displayName = getDisplayName(item);
-
-                  // determine images
                   const uniqImages = getUniqueImagesForItem(item);
-
-                  // key: prefer stable item.id, fall back to composite (avoid using plain array index as key)
                   const itemKey =
                     (item as any).id || `${displayName}-${item.size || "N/A"}-${item.quality || "N/A"}-${idx}`;
 
@@ -748,10 +711,8 @@ export default function CartPage() {
 
               {formError && <p className="text-red-500 mb-6 font-semibold">{formError}</p>}
 
-              {/* Checkout Buttons (wider PayPal) */}
               <div className="max-w-2xl mx-auto w-full space-y-4">
                 <div className="w-full bg-background p-4 rounded-lg border border-border">
-                  {/* PayPal (constrained to full card width) */}
                   <div className="mb-3 w-full">
                     <div className="w-full bg-card p-2 rounded-md shadow-sm">
                       <PayPalButtons
@@ -782,7 +743,6 @@ export default function CartPage() {
                             const amountStr = details.purchase_units?.[0]?.amount?.value;
                             if (!amountStr) throw new Error("Payment amount not found");
                             const amountNum = Number.parseFloat(amountStr);
-                            // Pass PayPal amount (USD) as `total` to backend along with KWD total
                             await sendOrder(details.id || "", amountNum, "PayPal");
                           } catch (err) {
                             const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
@@ -792,9 +752,6 @@ export default function CartPage() {
                       />
                     </div>
                   </div>
-
-                  {/* 
-                    COD option removed for now — commented out so you can re-enable later.
 
                   <div className="flex items-center gap-3 my-2">
                     <div className="flex-1 h-px bg-border" />
@@ -808,9 +765,6 @@ export default function CartPage() {
                   >
                     Cash on Delivery (COD)
                   </Button>
-                  
-                  */}
-
                 </div>
               </div>
             </>

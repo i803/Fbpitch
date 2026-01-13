@@ -374,18 +374,19 @@ export default function CartPage() {
     try {
       const userId = username ?? null;
       const payload = {
-        orderId,
-        userId,
-        totalAmount: totalKWD,
-        total: amount,
-        totalKWD,
-        customer: username,
-        paymentMethod: method,
-        promoCode: promoCode?.trim()?.toUpperCase() || null,
-        discountPercent: promoDiscountPercent,
-        shippingAddress: addressData,
-        items: cart,
-      };
+  orderId,
+  userId,
+  totalAmount: totalKWD,
+  total: amount,
+  totalKWD,
+  customer: username,
+  paymentMethod: method,
+  promoCode: promoCode?.trim()?.toUpperCase() || null,
+  discountPercent: promoDiscountPercent,
+  address: addressData, // ✅ FIX
+  items: cart,
+};
+
 
       const res = await fetch("/api/orders", {
         method: "POST",

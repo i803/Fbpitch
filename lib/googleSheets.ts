@@ -14,31 +14,43 @@ export async function appendOrderToGoogleSheets(order: any) {
   const sheets = google.sheets({ version: "v4", auth });
 
   const sheetId = process.env.GS_SHEET_ID;
-  const sheetName = "Orders"; // Must match your tab name
+  const sheetName = "Orders";
+
+  if (!Array.isArray(order.items)) {
+    console.error("❌ No items sent to Google Sheets");
+    return;
+  }
 
   const rows = order.items.map((item: any) => [
-    order.orderId,
-    order.customer,
-    order.paymentMethod,
-    order.promoCode || "",
-    order.discountPercent || 0,
-    item.productName || item.name,
+    // ── Order
+    item._id || "",                    // Order ID
+    item.customerName || "",            // Customer
+    item.paymentMethod || "",           // Payment Method
+    item.promoCode || "",               // Promo Code
+    item.discount ?? 0,                 // Discount %
+
+    // ── Product
+    item.name || "",                    // Product Name
     item.size || "",
     item.quality || "",
-    item.sleeve || item.sleeves || "",
-    Array.isArray(item.patches) ? item.patches.join(", ") : item.patches || "",
+    item.sleeve || "",
+    item.patch || "",
     item.customName || "",
-    item.instagram || "", // optional field
-    item.addShorts || item.shortsSelected || item.shorts ? "Yes" : "No",
-    item.price || 0,
-    order.shippingAddress.firstName,
-    order.shippingAddress.lastName,
-    order.shippingAddress.phone,
-    order.shippingAddress.street,
-    order.shippingAddress.city,
-    order.shippingAddress.state,
-    order.shippingAddress.postal || "",
-    new Date().toISOString(),
+    item.instagram || "",
+    item.shortsAdded ? "Yes" : "No",
+    item.price ?? 0,
+
+    // ── Address
+    item.firstName || "",
+    item.lastName || "",
+    item.phone || "",
+    item.street || "",
+    item.city || "",
+    item.state || "",
+    item.postal || "",
+
+    // ── Timestamp
+    new Date().toLocaleString(),
   ]);
 
   await sheets.spreadsheets.values.append({
@@ -47,4 +59,6 @@ export async function appendOrderToGoogleSheets(order: any) {
     valueInputOption: "RAW",
     requestBody: { values: rows },
   });
+
+  console.log("✅ Order appended to Google Sheets");
 }

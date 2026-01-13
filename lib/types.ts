@@ -9,13 +9,9 @@ export interface Product {
   name: string;
   price: number;
 
-  // legacy single image (may still be present)
   image?: string;
-
-  // normalized gallery (used in products/[id] page)
   images?: ProductImage[];
 
-  // explicit variant assets
   shortsImage?: string;
   longSleevesImage?: string;
 
@@ -30,39 +26,29 @@ export interface Product {
   updatedAt?: Date;
 }
 
-/**
- * CartItem: updated to reflect the fields produced by products/[id]/page.tsx
- */
 export interface CartItem {
   id: string;
-
-  // link back to product if available
   productId?: string;
   productName: string;
+  price: number;
+  basePrice?: number;
 
-  // price fields
-  price: number; // final price per item (before quantity)
-  basePrice?: number; // original product.price (optional)
-
-  // images
-  image: string; // primary image (legacy single URL)
-  images?: string[]; // ordered images for cart carousel (preferred)
+  image: string;
+  images?: string[];
   shortsImage?: string;
   longSleevesImage?: string;
 
-  // product/options
   size?: string;
   quality?: string;
   sleeve?: string | null;
 
-  // extras
   patches?: string[];
   customName?: string;
   instagram?: string;
   addShorts?: boolean;
 
-  // quantity
   quantity: number;
+  categories?: string[];
 }
 
 export interface User {
@@ -79,20 +65,58 @@ export interface Order {
   userId: string;
   items: CartItem[];
   totalAmount: number;
-  promoCode?: string; // ✅ added
-  discountPercent?: number; // ✅ added
+  promoCode?: string;
+  discountPercent?: number;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+
   shippingAddress: {
     street: string;
     city: string;
     state: string;
     zipCode: string;
     country: string;
-    email?: string; // optional
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    name?: string;
   };
+
   paymentMethod: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// -------------------------
+// Google Sheets Interfaces
+// -------------------------
+export interface SheetItem {
+  _id: string; // Order ID
+  customerName: string;
+  paymentMethod: string;
+  promoCode?: string;
+  discount?: number;
+  name: string; // Product Name
+  size?: string;
+  quality?: string;
+  sleeve?: string;
+  patch?: string;
+  customName?: string;
+  instagram?: string;
+  shortsAdded?: boolean;
+  price: number;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  postal?: string;
+  country?: string;
+}
+
+export interface SheetsOrder {
+  items: SheetItem[];
 }
 
 export interface FormInputProps {

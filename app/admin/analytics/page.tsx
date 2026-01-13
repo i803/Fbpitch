@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 export default function AnalyticsPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(
-    {}
-  );
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [totalRevenue, setTotalRevenue] = useState(0);
 
   const [filters, setFilters] = useState({
@@ -23,7 +21,6 @@ export default function AnalyticsPage() {
   /* ================= AUTH GUARD ================= */
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
-
     if (!token) {
       router.push("/admin/login");
       return;
@@ -33,13 +30,9 @@ export default function AnalyticsPage() {
       try {
         const res = await fetch("/api/verify-admin", {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
         if (!res.ok) throw new Error("Not admin");
-
         await res.json();
 
         fetchOrders(token);
@@ -55,19 +48,11 @@ export default function AnalyticsPage() {
   }, [router]);
 
   /* ================= FETCH ORDERS ================= */
-  const fetchOrders = async (
-    token: string,
-    customFilters: Record<string, string> = {}
-  ) => {
+  const fetchOrders = async (token: string, customFilters: Record<string, string> = {}) => {
     try {
       const params = new URLSearchParams(customFilters);
-      const url =
-        "/api/orders" + (params.toString() ? `?${params}` : "");
-
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const url = "/api/orders" + (params.toString() ? `?${params}` : "");
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) {
         console.error("Error fetching orders:", await res.text());
         return;
@@ -75,15 +60,12 @@ export default function AnalyticsPage() {
 
       const data = await res.json();
       const ordersList = data.orders || [];
-
       setOrders(ordersList);
 
       const revenue = ordersList.reduce(
-        (sum: number, order: any) =>
-          sum + (Number(order.amount) || 0),
+        (sum: number, order: any) => sum + (Number(order.totalAmount) || 0),
         0
       );
-
       setTotalRevenue(revenue);
     } catch (err) {
       console.error("Error fetching orders", err);
@@ -98,18 +80,13 @@ export default function AnalyticsPage() {
 
       const data = await res.json();
       const productList = data.products || [];
-
       setProducts(productList);
 
-      const counts = productList.reduce(
-        (acc: Record<string, number>, p: any) => {
-          if (!p.category) return acc;
-          acc[p.category] = (acc[p.category] || 0) + 1;
-          return acc;
-        },
-        {}
-      );
-
+      const counts = productList.reduce((acc: Record<string, number>, p: any) => {
+        if (!p.category) return acc;
+        acc[p.category] = (acc[p.category] || 0) + 1;
+        return acc;
+      }, {});
       setCategoryCounts(counts);
     } catch (err) {
       console.error("Error fetching products", err);
@@ -117,13 +94,8 @@ export default function AnalyticsPage() {
   };
 
   /* ================= FILTERS ================= */
-  const handleFilterChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFilters((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const applyFilters = () => {
@@ -141,10 +113,7 @@ export default function AnalyticsPage() {
 
     try {
       const token = localStorage.getItem("adminToken");
-      if (!token) {
-        router.push("/admin/login");
-        return;
-      }
+      if (!token) router.push("/admin/login");
 
       const res = await fetch(`/api/orders/${id}`, {
         method: "DELETE",
@@ -160,7 +129,7 @@ export default function AnalyticsPage() {
         const deleted = prev.find((o) => o._id === id);
         if (deleted) {
           setTotalRevenue((rev) =>
-            Math.max(0, rev - (Number(deleted.amount) || 0))
+            Math.max(0, rev - (Number(deleted.totalAmount) || 0))
           );
         }
         return prev.filter((o) => o._id !== id);
@@ -187,21 +156,13 @@ export default function AnalyticsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <StatCard
-          title="Total Orders"
-          value={orders.length}
-          color="text-red-500"
-        />
+        <StatCard title="Total Orders" value={orders.length} color="text-red-500" />
         <StatCard
           title="Total Revenue (KWD)"
           value={totalRevenue.toFixed(3)}
           color="text-green-400"
         />
-        <StatCard
-          title="Total Products"
-          value={products.length}
-          color="text-white"
-        />
+        <StatCard title="Total Products" value={products.length} color="text-white" />
       </div>
 
       {/* Filters */}
@@ -209,10 +170,35 @@ export default function AnalyticsPage() {
         <h2 className="text-2xl font-bold mb-4">Filter Orders</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <FilterInput label="Start Date" type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} />
-          <FilterInput label="End Date" type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} />
-          <FilterInput label="Min Amount (KWD)" type="number" name="minAmount" value={filters.minAmount} onChange={handleFilterChange} />
-          <FilterInput label="Customer Name" type="text" name="customer" value={filters.customer} onChange={handleFilterChange} placeholder="Search by name" />
+          <FilterInput
+            label="Start Date"
+            type="date"
+            name="startDate"
+            value={filters.startDate}
+            onChange={handleFilterChange}
+          />
+          <FilterInput
+            label="End Date"
+            type="date"
+            name="endDate"
+            value={filters.endDate}
+            onChange={handleFilterChange}
+          />
+          <FilterInput
+            label="Min Amount (KWD)"
+            type="number"
+            name="minAmount"
+            value={filters.minAmount}
+            onChange={handleFilterChange}
+          />
+          <FilterInput
+            label="Customer Name"
+            type="text"
+            name="customer"
+            value={filters.customer}
+            onChange={handleFilterChange}
+            placeholder="Search by name"
+          />
         </div>
 
         <button
@@ -225,22 +211,19 @@ export default function AnalyticsPage() {
 
       {/* Category Stats */}
       <div className="bg-gray-900 p-6 rounded-lg shadow mb-10 border-t-4 border-white">
-        <h2 className="text-2xl font-bold mb-4">
-          Product Count by Category
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">Product Count by Category</h2>
 
         {Object.keys(categoryCounts).length === 0 ? (
           <p className="text-gray-400">No category data available.</p>
         ) : (
           <ul className="space-y-2">
             {Object.entries(categoryCounts).map(([cat, count]) => (
-              <li key={cat} className="flex justify-between border-b border-gray-700 pb-2">
-                <span className="capitalize">
-                  {cat.replace(/-/g, " ")}
-                </span>
-                <span className="text-red-500 font-semibold">
-                  {count}
-                </span>
+              <li
+                key={cat}
+                className="flex justify-between border-b border-gray-700 pb-2"
+              >
+                <span className="capitalize">{cat.replace(/-/g, " ")}</span>
+                <span className="text-red-500 font-semibold">{count}</span>
               </li>
             ))}
           </ul>
@@ -252,9 +235,7 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {orders.length === 0 ? (
-          <p className="text-gray-400 col-span-full">
-            No orders available.
-          </p>
+          <p className="text-gray-400 col-span-full">No orders available.</p>
         ) : (
           orders.map((order) => (
             <div
@@ -263,11 +244,11 @@ export default function AnalyticsPage() {
             >
               <div>
                 <h3 className="font-semibold mb-2">
-                  Customer: {order.customer || "Unknown"}
+                  Customer: {order.firstName || ""} {order.lastName || "Unknown"}
                 </h3>
 
                 <p className="text-gray-300">
-                  Amount Paid: KD {(Number(order.amount) || 0).toFixed(3)}
+                  Amount Paid: KD {(Number(order.totalAmount) || 0).toFixed(3)}
                 </p>
 
                 <p className="text-gray-400 text-sm mb-2">
@@ -276,6 +257,17 @@ export default function AnalyticsPage() {
                     : "N/A"}
                 </p>
 
+                {/* Shipping Details */}
+                <div className="text-gray-300 mb-2">
+                  {order.phone && <p><strong>Phone:</strong> {order.phone}</p>}
+                  {order.street && <p><strong>Street:</strong> {order.street}</p>}
+                  {order.city && <p><strong>City:</strong> {order.city}</p>}
+                  {order.state && <p><strong>State:</strong> {order.state}</p>}
+                  {order.postalCode && <p><strong>Postal Code:</strong> {order.postalCode}</p>}
+                  {order.country && <p><strong>Country:</strong> {order.country}</p>}
+                </div>
+
+                {/* Items */}
                 {order.items?.length > 0 && (
                   <ul className="list-disc list-inside text-gray-300 space-y-1">
                     {order.items.map((item: any, i: number) => (
@@ -283,8 +275,10 @@ export default function AnalyticsPage() {
                         {item.name}
                         {item.size && ` - Size: ${item.size}`}
                         {item.quality && ` - Quality: ${item.quality}`}
-                        {item.price &&
-                          ` - KD ${(Number(item.price) || 0).toFixed(3)}`}
+                        {item.patch && ` - Patch: ${item.patch}`}
+                        {item.customName && ` - Name: ${item.customName}`}
+                        {item.showShorts ? " - Includes Shorts" : ""}
+                        {item.price && ` - KD ${(Number(item.price) || 0).toFixed(3)}`}
                       </li>
                     ))}
                   </ul>
@@ -306,16 +300,7 @@ export default function AnalyticsPage() {
 }
 
 /* ================= SUB COMPONENTS ================= */
-
-function StatCard({
-  title,
-  value,
-  color,
-}: {
-  title: string;
-  value: string | number;
-  color?: string;
-}) {
+function StatCard({ title, value, color }: { title: string; value: string | number; color?: string }) {
   return (
     <div className="bg-gray-900 p-6 rounded-lg border-l-4 border-red-600 shadow">
       <h3 className="text-xl font-semibold mb-2">{title}</h3>

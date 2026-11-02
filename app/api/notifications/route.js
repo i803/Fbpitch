@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import dbConnect from "@/lib/mongodb"; // make sure you have this utility
+import dbConnect from "@/lib/dbConnect";
 
 // ✅ Notification Schema
 const NotificationSchema = new mongoose.Schema({
